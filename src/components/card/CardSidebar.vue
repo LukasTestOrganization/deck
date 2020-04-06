@@ -29,7 +29,8 @@
 		<AppSidebarTab id="details"
 			:order="0"
 			:name="t('deck', 'Details')"
-			icon="icon-home">
+			icon="icon-home"
+			ref="detailsSidebar">
 			<div class="section-wrapper">
 				<div v-tooltip="t('deck', 'Tags')" class="section-label icon-tag">
 					<span class="hidden-visually">{{ t('deck', 'Tags') }}</span>
@@ -119,15 +120,12 @@
 					type="deck-card" />
 			</div>
 
-			<h5>
-				{{ t('deck', 'Description') }}
+			<Editor v-if="copiedCard.id" :content="copiedCard.description" ref="editor" type="markdown" @update="updateText">
 				<a v-tooltip="t('deck', 'Formatting help')"
-					href="https://deck.readthedocs.io/en/latest/Markdown/"
-					target="_blank"
-					class="icon icon-info" />
-			</h5>
-			<!-- FIXME: make sure the editor is disabled when canEdit is false -->
-			<VueEasymde ref="markdownEditor" v-model="copiedCard.description" :configs="mdeConfig" />
+				   href="https://deck.readthedocs.io/en/latest/Markdown/"
+				   target="_blank"
+				   class="icon icon-info" />
+			</Editor>
 		</AppSidebarTab>
 
 		<AppSidebarTab id="attachments"
@@ -164,7 +162,7 @@ import { CollectionList } from 'nextcloud-vue-collections'
 import CardSidebarTabAttachments from './CardSidebarTabAttachments'
 import CardSidebarTabComments from './CardSidebarTabComments'
 import CardSidebarTabActivity from './CardSidebarTabActivity'
-
+import Editor from '@nextcloud/text'
 const capabilities = window.OC.getCapabilities()
 
 export default {
@@ -182,6 +180,7 @@ export default {
 		CardSidebarTabAttachments,
 		CardSidebarTabComments,
 		CardSidebarTabActivity,
+		Editor,
 	},
 	mixins: [
 		Color,
@@ -288,6 +287,11 @@ export default {
 		clearInterval(this.updateRelativeTimestamps)
 	},
 	methods: {
+		updateText(text) {
+			console.log(text)
+			this.copiedCard.description = text
+			this.$store.dispatch('updateCardDesc', this.copiedCard)
+		},
 		updateRelativeTimestamps() {
 			this.lastModifiedRelative = OC.Util.relativeModifiedDate(this.currentCard.lastModified * 1000)
 			this.lastCreatedRemative = OC.Util.relativeModifiedDate(this.currentCard.createdAt * 1000)
