@@ -1,14 +1,23 @@
 <?php
-declare(strict_types=1);
 
 namespace OCA\Deck\Command;
 
+use OCA\Deck\Service\BoardService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class TransferOwnership extends Command {
+
+	protected $boardService;
+
+	public function __construct(BoardService $boardService)
+	{
+		parent::__construct();
+
+		$this->boardService = $boardService;
+	}
 
 	protected function configure() {
 		$this
@@ -19,45 +28,22 @@ final class TransferOwnership extends Command {
 				InputArgument::REQUIRED,
 				'Owner uid'
 			)
-            ->addArgument(
-                'newOwner',
-                InputArgument::REQUIRED,
-                'New owner uid'
-            );
+			->addArgument(
+				'newOwner',
+				InputArgument::REQUIRED,
+				'New owner uid'
+			);
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$owner = $input->getArgument('owner');
 		$newOwner = $input->getArgument('newOwner');
-        $db = \OC::$server->getDatabaseConnection();
 
-        $output->writeln("Transfer deck entities from $owner to $newOwner");
-        $params = [
-            'owner' => $owner,
-            'newOwner' => $newOwner
-        ];
+		$output->writeln("Transfer deck entities from $owner to $newOwner");
 
-        $output->writeln('update oc_deck_assigned_users');
-        $stmt = $db->prepare('UPDATE `oc_deck_assigned_users` SET `participant` = :newOwner WHERE `participant` = :owner');
-        $stmt->execute($params);
+		$this->boardService->transferOwnership($owner, $newOwner);
 
-        $output->writeln('update oc_deck_attachment');
-        $stmt = $db->prepare('UPDATE `oc_deck_attachment` SET `created_by` = :newOwner WHERE `created_by` = :owner');
-        $stmt->execute($params);
-
-        $output->writeln('update oc_deck_boards');
-        $stmt = $db->prepare('UPDATE `oc_deck_boards` SET `owner` = :newOwner WHERE `owner` = :owner');
-        $stmt->execute($params);
-
-        $output->writeln('update oc_deck_board_acl');
-        $stmt = $db->prepare('UPDATE `oc_deck_board_acl` SET `participant` = :newOwner WHERE `participant` = :owner');
-        $stmt->execute($params);
-
-        $output->writeln('update oc_deck_cards');
-        $stmt = $db->prepare('UPDATE `oc_deck_cards` SET `owner` = :newOwner WHERE `owner` = :owner');
-        $stmt->execute($params);
-
-        $output->writeln("Transfer deck entities from $owner to $newOwner completed");
-    }
+		$output->writeln("Transfer deck entities from $owner to $newOwner completed");
+	}
 
 }

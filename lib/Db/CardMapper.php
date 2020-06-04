@@ -336,4 +336,20 @@ class CardMapper extends QBMapper implements IPermissionMapper {
 			return null;
 		});
 	}
+
+	/**
+	 * @param $ownerId
+	 * @param $newOwnerId
+	 * @return void
+	 */
+	public function transferOwnership($ownerId, $newOwnerId)
+	{
+		$params = [
+			'owner' => $ownerId,
+			'newOwner' => $newOwnerId
+		];
+		$sql = "UPDATE `{$this->tableName}`  SET `owner` = :newOwner WHERE `owner` = :owner";
+		$stmt = $this->execute($sql, $params);
+		$stmt->closeCursor();
+	}
 }

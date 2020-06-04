@@ -51,4 +51,21 @@ class AclMapper extends DeckMapper implements IPermissionMapper {
 		$sql = 'SELECT * from *PREFIX*deck_board_acl WHERE type = ? AND participant = ?';
 		return $this->findEntities($sql, [$type, $participant]);
 	}
+
+	/**
+	 * @param $ownerId
+	 * @param $newOwnerId
+	 * @return void
+	 */
+	public function transferOwnership($ownerId, $newOwnerId)
+	{
+		$params = [
+			'owner' => $ownerId,
+			'newOwner' => $newOwnerId,
+			'type' => Acl::PERMISSION_TYPE_USER
+		];
+		$sql = "UPDATE `{$this->tableName}`  SET `participant` = :newOwner WHERE `participant` = :owner AND `type` = :type";
+		$stmt = $this->execute($sql, $params);
+		$stmt->closeCursor();
+	}
 }

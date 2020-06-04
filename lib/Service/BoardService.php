@@ -30,6 +30,7 @@ use OCA\Deck\AppInfo\Application;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\AssignedUsersMapper;
+use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\ChangeHelper;
 use OCA\Deck\Db\IPermissionMapper;
 use OCA\Deck\Db\Label;
@@ -67,6 +68,7 @@ class BoardService {
 	/** @var EventDispatcherInterface */
 	private $eventDispatcher;
 	private $changeHelper;
+	private $cardMapper;
 
 	private $boardsCache = null;
 
@@ -81,6 +83,7 @@ class BoardService {
 		PermissionService $permissionService,
 		NotificationHelper $notificationHelper,
 		AssignedUsersMapper $assignedUsersMapper,
+		CardMapper $cardMapper,
 		IUserManager $userManager,
 		IGroupManager $groupManager,
 		ActivityManager $activityManager,
@@ -103,6 +106,7 @@ class BoardService {
 		$this->eventDispatcher = $eventDispatcher;
 		$this->changeHelper = $changeHelper;
 		$this->userId = $userId;
+		$this->cardMapper = $cardMapper;
 	}
 
 	/**
@@ -704,6 +708,19 @@ class BoardService {
 		}
 
 		return $newBoard;
+	}
+
+	/**
+	 * @param $ownerId
+	 * @param $newOwnerId
+	 * @return void
+	 */
+	public function transferOwnership($owner, $newOwner)
+	{
+		$this->boardMapper->transferOwnership($owner, $newOwner);
+		$this->assignedUsersMapper->transferOwnership($owner, $newOwner);
+		$this->aclMapper->transferOwnership($owner, $newOwner);
+		$this->cardMapper->transferOwnership($owner, $newOwner);
 	}
 
 	private function enrichWithStacks($board, $since = -1) {
