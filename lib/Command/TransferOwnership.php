@@ -9,11 +9,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class TransferOwnership extends Command {
-
 	protected $boardService;
 
-	public function __construct(BoardService $boardService)
-	{
+	public function __construct(BoardService $boardService) {
 		parent::__construct();
 
 		$this->boardService = $boardService;
@@ -45,5 +43,4 @@ final class TransferOwnership extends Command {
 
 		$output->writeln("Transfer deck entities from $owner to $newOwner completed");
 	}
-
 }

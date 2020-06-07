@@ -281,19 +281,18 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 		});
 	}
 
-    /**
-     * @param $ownerId
-     * @param $newOwnerId
-     * @return void
-     */
-    public function transferOwnership($ownerId, $newOwnerId)
-    {
-        $params = [
-            'owner' => $ownerId,
-            'newOwner' => $newOwnerId
-        ];
-        $sql = "UPDATE `{$this->tableName}` SET `owner` = :newOwner WHERE `owner` = :owner";
-        $stmt = $this->execute($sql, $params);
-        $stmt->closeCursor();
-    }
+	/**
+	 * @param $ownerId
+	 * @param $newOwnerId
+	 * @return void
+	 */
+	public function transferOwnership($ownerId, $newOwnerId) {
+		$params = [
+			'owner' => $ownerId,
+			'newOwner' => $newOwnerId
+		];
+		$sql = "UPDATE `{$this->tableName}` SET `owner` = :newOwner WHERE `owner` = :owner";
+		$stmt = $this->execute($sql, $params);
+		$stmt->closeCursor();
+	}
 }
