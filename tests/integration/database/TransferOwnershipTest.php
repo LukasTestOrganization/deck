@@ -10,7 +10,7 @@ use OCA\Deck\Db\Board;
  * @group DB
  * @coversDefaultClass OCA\Deck\Service\BoardService
  */
-class AssignedUsersMapperTest extends \Test\TestCase {
+class TransferOwnershipTest extends \Test\TestCase {
 	private const TEST_OWNER = 'test-share-user1';
 	private const TEST_NEW_OWNER = 'target';
 	private const TEST_GROUP = 'test-share-user1';
@@ -131,6 +131,21 @@ class AssignedUsersMapperTest extends \Test\TestCase {
 		$this->assertContains(self::TEST_NEW_OWNER, $participantsUIDs);
 		$this->assertNotContains(self::TEST_OWNER, $participantsUIDs);
 	}
+
+    /**
+     * @covers ::transferOwnership
+     */
+    public function testReassignCardToNewParticipantOnlyIfParticipantHasUserType() {
+        $this->boardService->transferOwnership(self::TEST_OWNER, self::TEST_NEW_OWNER);
+        $this->assignmentService->ass($cards[0]->getId(), self::TEST_OWNER);
+        $assignedUsers = $this->assignedUsersMapper->find($this->cards[0]->getId());
+        $participantsUIDs = [];
+        foreach ($assignedUsers as $user) {
+            $participantsUIDs[] = $user->getParticipant();
+        }
+        $this->assertContains(self::TEST_NEW_OWNER, $participantsUIDs);
+        $this->assertNotContains(self::TEST_OWNER, $participantsUIDs);
+    }
 
 	public function tearDown(): void {
 		$this->boardService->deleteForce($this->board->getId());
