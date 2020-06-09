@@ -28,7 +28,7 @@ composer dump-autoload
 if [ -z "$EXECUTOR_NUMBER" ]; then
     EXECUTOR_NUMBER=0
 fi
-PORT=$((8080 + $EXECUTOR_NUMBER))
+PORT=$((9090 + $EXECUTOR_NUMBER))
 echo $PORT
 php -S localhost:$PORT -t $OC_PATH &
 PHPPID=$!

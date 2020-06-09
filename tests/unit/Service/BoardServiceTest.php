@@ -31,6 +31,7 @@ use OCA\Deck\Db\AssignedUsers;
 use OCA\Deck\Db\AssignedUsersMapper;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\BoardMapper;
+use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\ChangeHelper;
 use OCA\Deck\Db\LabelMapper;
 use OCA\Deck\Db\StackMapper;
@@ -57,6 +58,8 @@ class BoardServiceTest extends TestCase {
 	private $boardMapper;
 	/** @var StackMapper */
 	private $stackMapper;
+    /** @var CardMapper */
+    private $cardMapper;
 	/** @var PermissionService */
 	private $permissionService;
 	/** @var NotificationHelper */
@@ -82,6 +85,7 @@ class BoardServiceTest extends TestCase {
 		$this->boardMapper = $this->createMock(BoardMapper::class);
 		$this->stackMapper = $this->createMock(StackMapper::class);
 		$this->config = $this->createMock(IConfig::class);
+		$this->cardMapper = $this->createMock(CardMapper::class);
 		$this->labelMapper = $this->createMock(LabelMapper::class);
 		$this->permissionService = $this->createMock(PermissionService::class);
 		$this->notificationHelper = $this->createMock(NotificationHelper::class);
@@ -102,6 +106,7 @@ class BoardServiceTest extends TestCase {
 			$this->permissionService,
 			$this->notificationHelper,
 			$this->assignedUsersMapper,
+			$this->cardMapper,
 			$this->userManager,
 			$this->groupManager,
 			$this->activityManager,
