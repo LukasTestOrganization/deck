@@ -66,7 +66,7 @@ class TransferOwnershipTest extends \Test\TestCase {
 		$this->boardService->addAcl($id, Acl::PERMISSION_TYPE_USER, self::TEST_USER_1, true, true, true);
 		$this->boardService->addAcl($id, Acl::PERMISSION_TYPE_GROUP, self::TEST_GROUP, true, true, true);
 		$this->boardService->addAcl($id, Acl::PERMISSION_TYPE_USER, self::TEST_USER_3, false, true, false);
-        $stacks[] = $this->stackService->create('Stack A', $id, 1);
+		$stacks[] = $this->stackService->create('Stack A', $id, 1);
 		$stacks[] = $this->stackService->create('Stack B', $id, 1);
 		$stacks[] = $this->stackService->create('Stack C', $id, 1);
 		$cards[] = $this->cardService->create('Card 1', $stacks[0]->getId(), 'text', 0, self::TEST_USER_1);
@@ -136,68 +136,68 @@ class TransferOwnershipTest extends \Test\TestCase {
 		$this->assertNotContains(self::TEST_USER_1, $participantsUIDs);
 	}
 
-    /**
-     * @covers ::transferOwnership
-     */
-    public function testReassignCardToNewParticipantOnlyIfParticipantHasUserType() {
-        $this->assignmentService->assignUser($this->cards[1]->getId(), self::TEST_USER_1, AssignedUsers::TYPE_GROUP);
-        $this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_2);
-        $assignedUsers = $this->assignedUsersMapper->find($this->cards[1]->getId());
-        $participantsUIDs = [];
-        foreach ($assignedUsers as $user) {
-            $participantsUIDs[] = $user->getParticipant();
-        }
-        $this->assertContains(self::TEST_USER_1, $participantsUIDs);
-        $this->assertNotContains(self::TEST_USER_2, $participantsUIDs);
-    }
+	/**
+	 * @covers ::transferOwnership
+	 */
+	public function testReassignCardToNewParticipantOnlyIfParticipantHasUserType() {
+		$this->assignmentService->assignUser($this->cards[1]->getId(), self::TEST_USER_1, AssignedUsers::TYPE_GROUP);
+		$this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_2);
+		$assignedUsers = $this->assignedUsersMapper->find($this->cards[1]->getId());
+		$participantsUIDs = [];
+		foreach ($assignedUsers as $user) {
+			$participantsUIDs[] = $user->getParticipant();
+		}
+		$this->assertContains(self::TEST_USER_1, $participantsUIDs);
+		$this->assertNotContains(self::TEST_USER_2, $participantsUIDs);
+	}
 
-    /**
-     * @covers ::transferOwnership
-     */
-    public function testTargetAlreadyParticipantOfBoard() {
-        $this->expectNotToPerformAssertions();
-        $this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_3);
-    }
+	/**
+	 * @covers ::transferOwnership
+	 */
+	public function testTargetAlreadyParticipantOfBoard() {
+		$this->expectNotToPerformAssertions();
+		$this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_3);
+	}
 
-    /**
-     * @covers ::transferOwnership
-     */
-    public function testDontRemoveTargetFromAcl() {
-        $this->boardService->transferOwnership(self::TEST_USER_2, self::TEST_USER_3);
-        $board = $this->boardService->find($this->board->getId());
-        $acl = $board->getAcl();
-        $isOwnerInAcl = (bool)array_filter($acl, function ($item) {
-            return $item->getParticipant() === self::TEST_USER_3 && $item->getType() === Acl::PERMISSION_TYPE_USER;
-        });
-        $this->assertTrue($isOwnerInAcl);
-    }
+	/**
+	 * @covers ::transferOwnership
+	 */
+	public function testDontRemoveTargetFromAcl() {
+		$this->boardService->transferOwnership(self::TEST_USER_2, self::TEST_USER_3);
+		$board = $this->boardService->find($this->board->getId());
+		$acl = $board->getAcl();
+		$isOwnerInAcl = (bool)array_filter($acl, function ($item) {
+			return $item->getParticipant() === self::TEST_USER_3 && $item->getType() === Acl::PERMISSION_TYPE_USER;
+		});
+		$this->assertTrue($isOwnerInAcl);
+	}
 
-    /**
-     * @covers ::transferOwnership
-     */
-    public function testMergePermissions() {
-        $this->boardService->addAcl($this->board->getId(), Acl::PERMISSION_TYPE_USER, self::TEST_USER_2, true, false, true);
-        $this->boardService->transferOwnership(self::TEST_USER_2, self::TEST_USER_3);
-        $board = $this->boardService->find($this->board->getId());
-        $acl = $board->getAcl();
-        $isMerged = (bool)array_filter($acl, function ($item) {
-            return $item->getParticipant() === self::TEST_USER_1
-                && $item->getType() === Acl::PERMISSION_TYPE_USER
-                && $item->getPermission(Acl::PERMISSION_EDIT)
-                && $item->getPermission(Acl::PERMISSION_SHARE)
-                && $item->getPermission(Acl::PERMISSION_MANAGE);
-        });
-        $this->assertTrue($isMerged);
-    }
+	/**
+	 * @covers ::transferOwnership
+	 */
+	public function testMergePermissions() {
+		$this->boardService->addAcl($this->board->getId(), Acl::PERMISSION_TYPE_USER, self::TEST_USER_2, true, false, true);
+		$this->boardService->transferOwnership(self::TEST_USER_2, self::TEST_USER_3);
+		$board = $this->boardService->find($this->board->getId());
+		$acl = $board->getAcl();
+		$isMerged = (bool)array_filter($acl, function ($item) {
+			return $item->getParticipant() === self::TEST_USER_1
+				&& $item->getType() === Acl::PERMISSION_TYPE_USER
+				&& $item->getPermission(Acl::PERMISSION_EDIT)
+				&& $item->getPermission(Acl::PERMISSION_SHARE)
+				&& $item->getPermission(Acl::PERMISSION_MANAGE);
+		});
+		$this->assertTrue($isMerged);
+	}
 
-    /**
-     * @covers ::transferOwnership
-     */
-    public function testTargetAlreadyParticipantOfCard() {
-        $this->expectNotToPerformAssertions();
-        $this->assignmentService->assignUser($this->cards[0]->getId(), self::TEST_USER_3, AssignedUsers::TYPE_USER);
-        $this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_3);
-    }
+	/**
+	 * @covers ::transferOwnership
+	 */
+	public function testTargetAlreadyParticipantOfCard() {
+		$this->expectNotToPerformAssertions();
+		$this->assignmentService->assignUser($this->cards[0]->getId(), self::TEST_USER_3, AssignedUsers::TYPE_USER);
+		$this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_3);
+	}
 
 	public function tearDown(): void {
 		$this->boardService->deleteForce($this->board->getId());
