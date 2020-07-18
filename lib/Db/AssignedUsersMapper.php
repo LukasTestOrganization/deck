@@ -155,10 +155,17 @@ class AssignedUsersMapper extends QBMapper implements IPermissionMapper {
 	 */
 	public function transferOwnership($ownerId, $newOwnerId) {
 		$params = [
-			'owner' => $ownerId,
 			'newOwner' => $newOwnerId,
             'type' => AssignedUsers::TYPE_USER
 		];
+        $sql = "DELETE FROM `{$this->tableName}`  WHERE `participant` = :newOwner AND `type`= :type";
+        $stmt = $this->execute($sql, $params);
+        $stmt->closeCursor();
+        $params = [
+            'owner' => $ownerId,
+            'newOwner' => $newOwnerId,
+            'type' => AssignedUsers::TYPE_USER
+        ];
 		$sql = "UPDATE `{$this->tableName}`  SET `participant` = :newOwner WHERE `participant` = :owner AND `type`= :type";
 		$stmt = $this->execute($sql, $params);
 		$stmt->closeCursor();

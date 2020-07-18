@@ -717,9 +717,9 @@ class BoardService {
 	 */
 	public function transferOwnership($owner, $newOwner) {
 		$this->boardMapper->transferOwnership($owner, $newOwner);
-		$this->assignedUsersMapper->transferOwnership($owner, $newOwner);
-		$this->aclMapper->transferOwnership($owner, $newOwner);
-		$this->cardMapper->transferOwnership($owner, $newOwner);
+        $this->aclMapper->transferOwnership($owner, $newOwner);
+        $this->assignedUsersMapper->transferOwnership($owner, $newOwner);
+        $this->cardMapper->transferOwnership($owner, $newOwner);
 	}
 
 	private function enrichWithStacks($board, $since = -1) {

@@ -58,13 +58,33 @@ class AclMapper extends DeckMapper implements IPermissionMapper {
 	 * @return void
 	 */
 	public function transferOwnership($ownerId, $newOwnerId) {
-		$params = [
-			'owner' => $ownerId,
-			'newOwner' => $newOwnerId,
-			'type' => Acl::PERMISSION_TYPE_USER
-		];
-		$sql = "UPDATE `{$this->tableName}`  SET `participant` = :newOwner WHERE `participant` = :owner AND `type` = :type";
-		$stmt = $this->execute($sql, $params);
-		$stmt->closeCursor();
+        $params = [
+            'owner' => $ownerId,
+            'newOwner' => $newOwnerId,
+            'type' => Acl::PERMISSION_TYPE_USER
+        ];
+		//We want preserve permissions from both users
+        $sql = "UPDATE `{$this->tableName}` AS `source` 
+                    LEFT JOIN `{$this->tableName}` AS `target` 
+                    ON `target`.`participant` = :newOwner AND `target`.`type` = :type 
+                    SET `source`.`permission_edit` =(`source`.`permission_edit` || `target`.`permission_edit`), 
+                        `source`.`permission_share` =(`source`.`permission_share` || `target`.`permission_share`), 
+                        `source`.`permission_manage` =(`source`.`permission_manage` || `target`.`permission_manage`) 
+                    WHERE `source`.`participant` = :owner AND `source`.`type` = :type";
+        $stmt = $this->execute($sql, $params);
+        $stmt->closeCursor();
+        //We can't transfer acl if target already in acl
+        $sql = "DELETE FROM `{$this->tableName}` 
+                    WHERE `participant` = :newOwner 
+                        AND `type` = :type 
+                        AND EXISTS (SELECT `id` FROM (SELECT `id` FROM `{$this->tableName}` 
+                                    WHERE `participant` = :owner AND `type` = :type) as tmp)";
+        $stmt = $this->execute($sql, $params);
+        $stmt->closeCursor();
+        //Now we can transfer without errors
+        $sqlUpdate = "UPDATE `{$this->tableName}`  
+                        SET `participant` = :newOwner WHERE `participant` = :owner AND `type` = :type";
+        $stmt = $this->execute($sqlUpdate, $params);
+        $stmt->closeCursor();
 	}
 }
