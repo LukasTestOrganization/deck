@@ -98,6 +98,7 @@ export default {
 			position: relative;
 			overflow-x: hidden;
 			align-items: stretch;
+			background-color: var(--color-background-dark) !important;
 		}
 
 		#app-sidebar {

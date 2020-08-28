@@ -271,7 +271,6 @@ export default {
 		margin-right: -10px;
 		margin-top: 0;
 		margin-bottom: 3px;
-		background-color: var(--color-main-background-translucent);
 		cursor: grab;
 
 		h3, form {
@@ -298,7 +297,6 @@ export default {
 		height: 52px;
 		z-index: 100;
 		display: flex;
-		background-color: var(--color-main-background);
 		margin-left: -10px;
 		margin-right: -10px;
 		padding-top: 3px;
@@ -310,6 +308,7 @@ export default {
 			margin-top: 0;
 			margin-bottom: 10px;
 			box-shadow: 0 0 3px var(--color-box-shadow);
+			background-color: var(--color-main-background);
 			border-radius: 3px;
 		}
 
