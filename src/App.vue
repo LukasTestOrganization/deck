@@ -23,7 +23,7 @@
 <template>
 	<div id="content" :class="{ 'nav-hidden': !navShown, 'sidebar-hidden': !sidebarRouterView }">
 		<AppNavigation v-show="navShown" />
-		<div id="app-content">
+		<div id="app-content" @click="clickCloseSidebar()">
 			<router-view />
 		</div>
 
@@ -94,6 +94,11 @@ export default {
 	methods: {
 		hideModal() {
 			this.$router.push({ name: 'board' })
+		},
+		clickCloseSidebar() {
+			if (this.sidebarShown) {
+				this.$router.push({ name: 'board' })
+			}
 		},
 	},
 	provide() {
