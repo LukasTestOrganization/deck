@@ -347,8 +347,8 @@ class CardMapper extends QBMapper implements IPermissionMapper {
 			'owner' => $ownerId,
 			'newOwner' => $newOwnerId
 		];
-		$sql = "UPDATE `{$this->tableName}`  SET `owner` = :newOwner WHERE `owner` = :owner";
-		$stmt = $this->execute($sql, $params);
+		$sql = "UPDATE `*PREFIX*{$this->tableName}`  SET `owner` = :newOwner WHERE `owner` = :owner";
+		$stmt = $this->db->executeQuery($sql, $params);
 		$stmt->closeCursor();
 	}
 }
