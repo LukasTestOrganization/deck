@@ -49,13 +49,13 @@
 					</form>
 				</template>
 			</EmptyContent>
-			<div v-else-if="!isEmpty && !loading" key="board" class="board">
+			<div v-else-if="!isEmpty && !loading" key="board" class="board" v-dragscroll:nochilddrag>
 				<Container lock-axix="y"
 					orientation="horizontal"
 					:drag-handle-selector="dragHandleSelector"
 					@drop="onDropStack">
 					<Draggable v-for="stack in stacksByBoard" :key="stack.id">
-						<Stack :stack="stack" />
+						<Stack :stack="stack" data-dragscroll />
 					</Draggable>
 				</Container>
 			</div>
@@ -75,7 +75,7 @@ import { mapState, mapGetters } from 'vuex'
 import Controls from '../Controls'
 import Stack from './Stack'
 import { EmptyContent } from '@nextcloud/vue'
-
+import { dragscroll } from 'vue-dragscroll'
 export default {
 	name: 'Board',
 	components: {
@@ -88,6 +88,9 @@ export default {
 	inject: [
 		'boardApi',
 	],
+	directives: {
+		dragscroll,
+	},
 	props: {
 		id: {
 			type: Number,
@@ -112,7 +115,7 @@ export default {
 			return this.$store.getters.stacksByBoard(this.board.id)
 		},
 		dragHandleSelector() {
-			return this.canEdit ? null : '.no-drag'
+			return this.canEdit ? '.stack--header' : '.no-drag'
 		},
 		isEmpty() {
 			return this.stacksByBoard.length === 0
