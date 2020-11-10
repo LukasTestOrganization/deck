@@ -14,6 +14,7 @@ Overall, Deck is easy to use. You can create boards, add users, share the Deck, 
 3. [Handle cards options](#3-handle-cards-options)
 4. [Archive old tasks](#4-archive-old-tasks)
 5. [Manage your board](#5-manage-your-board)
+6. [New owner for the deck entities](#6-new-owner-for-the-deck-entities)
 
 ### 1. Create my first board
 In this example, we're going to create a board and share it with an other nextcloud user.
@@ -69,3 +70,6 @@ The **sharing tab** allows you to add users or even groups to your boards.
 **Deleted objects** allows you to return previously deleted stacks or cards.  
 The **Timeline** allows you to see everything that happened in your boards. Everything!
 
+### 6. New owner for the deck entities
+You can transfer ownership of boards, cards, etc to a new user, using `occ` command `deck:transfer-ownership`  
+`$ php occ deck:transfer-ownership owner newOwner`
