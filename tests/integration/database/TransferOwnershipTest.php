@@ -82,6 +82,7 @@ class TransferOwnershipTest extends \Test\TestCase {
 	 */
 	public function testTransferBoardOwnership() {
 		$this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_2);
+		$this->invokePrivate($this->boardService, 'clearBoardsCache');
 		$board = $this->boardService->find($this->board->getId());
 		$boardOwner = $board->getOwner();
 		$this->assertEquals(self::TEST_USER_2, $boardOwner);
@@ -94,10 +95,10 @@ class TransferOwnershipTest extends \Test\TestCase {
 		$this->boardService->transferOwnership(self::TEST_USER_1, self::TEST_USER_2);
 		$board = $this->boardService->find($this->board->getId());
 		$acl = $board->getAcl();
-		$isTargetInAcl = (bool)array_filter($acl, function ($item) {
-			return $item->getParticipant() === self::TEST_USER_2 && $item->getType() === Acl::PERMISSION_TYPE_USER;
-		});
-		$this->assertTrue($isTargetInAcl);
+		// Check if old owner is no longer in ACL
+		$this->assertTrue((bool)array_filter($acl, function ($item) {
+			return $item->getParticipant() === self::TEST_USER_1 && $item->getType() === Acl::PERMISSION_TYPE_USER;
+		}));
 	}
 
 	/**

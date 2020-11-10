@@ -710,14 +710,12 @@ class BoardService {
 		return $newBoard;
 	}
 
-	/**
-	 * @param $ownerId
-	 * @param $newOwnerId
-	 * @return void
-	 */
-	public function transferOwnership($owner, $newOwner) {
+	public function transferOwnership(string $owner, string $newOwner): void {
+		$boards = $this->boardMapper->findAllByUser($owner);
+		foreach ($boards as $board) {
+			$this->aclMapper->transferOwnership($board->getId(), $owner, $newOwner);
+		}
 		$this->boardMapper->transferOwnership($owner, $newOwner);
-		$this->aclMapper->transferOwnership($owner, $newOwner);
 		$this->assignedUsersMapper->transferOwnership($owner, $newOwner);
 		$this->cardMapper->transferOwnership($owner, $newOwner);
 	}
@@ -748,5 +746,9 @@ class BoardService {
 			return;
 		}
 		$board->setUsers(array_values($boardUsers));
+	}
+
+	private function clearBoardsCache() {
+		$this->boardsCache = null;
 	}
 }

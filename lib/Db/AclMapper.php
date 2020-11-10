@@ -57,19 +57,18 @@ class AclMapper extends DeckMapper implements IPermissionMapper {
 	 * @param $newOwnerId
 	 * @return void
 	 */
-	public function transferOwnership($ownerId, $newOwnerId) {
+	public function transferOwnership($boardId, $ownerId, $newOwnerId) {
 		$params = [
-			'owner' => $ownerId,
 			'newOwner' => $newOwnerId,
-			'type' => Acl::PERMISSION_TYPE_USER
+			'type' => Acl::PERMISSION_TYPE_USER,
+			'boardId' => $boardId
 		];
 
 		// Drop existing ACL rules for the new owner
 		$sql = "DELETE FROM `{$this->tableName}` 
                     WHERE `participant` = :newOwner 
                         AND `type` = :type 
-                        AND EXISTS (SELECT `id` FROM (SELECT `id` FROM `{$this->tableName}` 
-                                    WHERE `participant` = :newOwner AND `type` = :type) as tmp)";
+                        AND `board_id` = :boardId";
 		$stmt = $this->execute($sql, $params);
 		$stmt->closeCursor();
 	}
