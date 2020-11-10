@@ -20,7 +20,7 @@ final class TransferOwnership extends Command {
 	protected function configure() {
 		$this
 			->setName('deck:transfer-ownership')
-			->setDescription('Change owner of deck entities')
+			->setDescription('Change owner of deck boards')
 			->addArgument(
 				'owner',
 				InputArgument::REQUIRED,
@@ -37,10 +37,10 @@ final class TransferOwnership extends Command {
 		$owner = $input->getArgument('owner');
 		$newOwner = $input->getArgument('newOwner');
 
-		$output->writeln("Transfer deck entities from $owner to $newOwner");
+		$output->writeln("Transfer deck boards from $owner to $newOwner");
 
 		$this->boardService->transferOwnership($owner, $newOwner);
 
-		$output->writeln("Transfer deck entities from $owner to $newOwner completed");
+		$output->writeln("Transfer deck boards from $owner to $newOwner completed");
 	}
 }
