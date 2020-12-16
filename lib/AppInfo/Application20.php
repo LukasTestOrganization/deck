@@ -31,6 +31,8 @@ use OCA\Deck\Capabilities;
 use OCA\Deck\Collaboration\Resources\ResourceProvider;
 use OCA\Deck\Collaboration\Resources\ResourceProviderCard;
 use OCA\Deck\Dashboard\DeckWidget;
+use OCA\Deck\Dashboard\DeckWidgetToday;
+use OCA\Deck\Dashboard\DeckWidgetTomorrow;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\AssignmentMapper;
@@ -112,6 +114,8 @@ class Application20 extends App implements IBootstrap {
 
 		$context->registerSearchProvider(DeckProvider::class);
 		$context->registerDashboardWidget(DeckWidget::class);
+		$context->registerDashboardWidget(DeckWidgetToday::class);
+		$context->registerDashboardWidget(DeckWidgetTomorrow::class);
 
 		$context->registerEventListener(BeforeTemplateRenderedEvent::class, BeforeTemplateRenderedListener::class);
 	}
