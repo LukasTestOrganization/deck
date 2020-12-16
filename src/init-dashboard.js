@@ -28,6 +28,8 @@ import overview from './store/overview'
 import './css/dashboard.scss'
 
 import Dashboard from './views/Dashboard.vue'
+import DashboardToday from './views/DashboardToday.vue'
+import DashboardTomorrow from './views/DashboardTomorrow.vue'
 
 Vue.use(Vuex)
 
@@ -52,6 +54,23 @@ Vue.prototype.OC = OC
 document.addEventListener('DOMContentLoaded', () => {
 	OCA.Dashboard.register('deck', (el) => {
 		const View = Vue.extend(Dashboard)
+		const vm = new View({
+			propsData: {},
+			store,
+		}).$mount(el)
+		return vm
+	})
+
+	OCA.Dashboard.register('deckToday', (el) => {
+		const View = Vue.extend(DashboardToday)
+		const vm = new View({
+			propsData: {},
+			store,
+		}).$mount(el)
+		return vm
+	})
+	OCA.Dashboard.register('deckTomorrow', (el) => {
+		const View = Vue.extend(DashboardTomorrow)
 		const vm = new View({
 			propsData: {},
 			store,
