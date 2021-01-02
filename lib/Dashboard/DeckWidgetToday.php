@@ -80,6 +80,6 @@ class DeckWidgetToday implements IWidget {
 	 * @inheritDoc
 	 */
 	public function load(): void {
-		\OCP\Util::addScript('deck', 'dashboardToday');
+		\OCP\Util::addScript('deck', 'dashboard');
 	}
 }

@@ -29,7 +29,7 @@ namespace OCA\Deck\Dashboard;
 use OCP\Dashboard\IWidget;
 use OCP\IL10N;
 
-class DeckWidget implements IWidget {
+class DeckWidgetUpcoming implements IWidget {
 
 	/**
 	 * @var IL10N
@@ -44,7 +44,7 @@ class DeckWidget implements IWidget {
 	 * @inheritDoc
 	 */
 	public function getId(): string {
-		return 'deck';
+		return 'deckUpcoming';
 	}
 
 	/**

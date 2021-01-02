@@ -57,7 +57,7 @@ import DueDate from '../components/cards/badges/DueDate'
 import { generateUrl } from '@nextcloud/router'
 
 export default {
-	name: 'Dashboard',
+	name: 'DashboardUpcoming',
 	components: {
 		DueDate,
 		DashboardWidget,

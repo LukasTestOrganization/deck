@@ -30,7 +30,7 @@ use OCA\Deck\Activity\CommentEventHandler;
 use OCA\Deck\Capabilities;
 use OCA\Deck\Collaboration\Resources\ResourceProvider;
 use OCA\Deck\Collaboration\Resources\ResourceProviderCard;
-use OCA\Deck\Dashboard\DeckWidget;
+use OCA\Deck\Dashboard\DeckWidgetUpcoming;
 use OCA\Deck\Dashboard\DeckWidgetToday;
 use OCA\Deck\Dashboard\DeckWidgetTomorrow;
 use OCA\Deck\Db\Acl;
@@ -113,7 +113,7 @@ class Application20 extends App implements IBootstrap {
 		});
 
 		$context->registerSearchProvider(DeckProvider::class);
-		$context->registerDashboardWidget(DeckWidget::class);
+		$context->registerDashboardWidget(DeckWidgetUpcoming::class);
 		$context->registerDashboardWidget(DeckWidgetToday::class);
 		$context->registerDashboardWidget(DeckWidgetTomorrow::class);
 

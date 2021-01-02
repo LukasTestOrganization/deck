@@ -27,7 +27,7 @@ import overview from './store/overview'
 
 import './css/dashboard.scss'
 
-import Dashboard from './views/Dashboard.vue'
+import DashboardUpcoming from './views/DashboardUpcoming.vue'
 import DashboardToday from './views/DashboardToday.vue'
 import DashboardTomorrow from './views/DashboardTomorrow.vue'
 
@@ -52,8 +52,8 @@ Vue.prototype.n = n
 Vue.prototype.OC = OC
 
 document.addEventListener('DOMContentLoaded', () => {
-	OCA.Dashboard.register('deck', (el) => {
-		const View = Vue.extend(Dashboard)
+	OCA.Dashboard.register('deckUpcoming', (el) => {
+		const View = Vue.extend(DashboardUpcoming)
 		const vm = new View({
 			propsData: {},
 			store,
