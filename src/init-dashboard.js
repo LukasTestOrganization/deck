@@ -52,7 +52,7 @@ Vue.prototype.n = n
 Vue.prototype.OC = OC
 
 document.addEventListener('DOMContentLoaded', () => {
-	OCA.Dashboard.register('deckUpcoming', (el) => {
+	OCA.Dashboard.register('deck', (el) => {
 		const View = Vue.extend(DashboardUpcoming)
 		const vm = new View({
 			propsData: {},

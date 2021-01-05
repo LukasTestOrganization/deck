@@ -44,7 +44,7 @@ class DeckWidgetUpcoming implements IWidget {
 	 * @inheritDoc
 	 */
 	public function getId(): string {
-		return 'deckUpcoming';
+		return 'deck';
 	}
 
 	/**
