@@ -32,10 +32,6 @@
     <screenshot>https://download.bitgrid.net/nextcloud/deck/screenshots/1.0/Deck-1.png</screenshot>
     <screenshot>https://download.bitgrid.net/nextcloud/deck/screenshots/1.0/Deck-2.png</screenshot>
     <dependencies>
-        <php min-version="7.3"/>
-        <database min-version="9.4">pgsql</database>
-        <database>sqlite</database>
-        <database min-version="5.5">mysql</database>
         <nextcloud min-version="21" max-version="22" />
     </dependencies>
     <background-jobs>

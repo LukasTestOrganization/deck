@@ -19,12 +19,16 @@ jobs:
       fail-fast: false
       matrix:
         php-versions: ['7.3', '7.4']
-        databases: ['sqlite', 'mysql', 'pgsql']
+        databases: ['sqlite', 'mysql', 'pgsql', 'oci']
         server-versions: ['master']
 
     name: php${{ matrix.php-versions }}-${{ matrix.databases }}-${{ matrix.server-versions }}
 
     services:
+      oracle:
+        image: deepdiver/docker-oracle-xe-11g # "wnameless/oracle-xe-11g-r2"
+        ports:
+          - "1521:1521"
       postgres:
         image: postgres
         ports:
@@ -66,7 +70,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           tools: phpunit
-          extensions: zip, gd, mbstring, iconv, fileinfo, intl, sqlite, pdo_sqlite, mysql, pdo_mysql, pgsql, pdo_pgsql
+          extensions: zip, gd, mbstring, iconv, fileinfo, intl, sqlite, pdo_sqlite, mysql, pdo_mysql, pgsql, pdo_pgsql, oci8
           coverage: none
 
       - name: Set up PHPUnit
@@ -81,7 +85,12 @@ jobs:
             export DB_PORT=4445
           fi
           mkdir data
-          ./occ maintenance:install --verbose --database=${{ matrix.databases }} --database-name=nextcloud --database-host=127.0.0.1 --database-port=$DB_PORT --database-user=root --database-pass=rootpassword --admin-user admin --admin-pass admin
+
+          if [ "${{ matrix.databases }}" = "oci" ]; then
+            ./occ maintenance:install --verbose --database=${{ matrix.databases }} --database-name=XE --database-host=127.0.0.1 --database-port=1521 --database-user=autotest --database-pass=owncloud --admin-user admin --admin-pass admin
+          else
+            ./occ maintenance:install --verbose --database=${{ matrix.databases }} --database-name=nextcloud --database-host=127.0.0.1 --database-port=$DB_PORT --database-user=root --database-pass=rootpassword --admin-user admin --admin-pass admin
+          fi
           ./occ app:enable --force ${{ env.APP_NAME }}
           php -S localhost:8080 &
 
