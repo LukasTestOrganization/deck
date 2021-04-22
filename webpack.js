@@ -26,7 +26,8 @@ const config = {
 		assets: true,
 		entrypoints: true,
 		chunks: true,
-		modules: true
+		modules: true,
+		excludeAssets: [/\.map/]
 	}
 }
 

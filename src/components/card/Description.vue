@@ -45,10 +45,14 @@
 			</Actions>
 		</h5>
 
-		<div v-if="!descriptionEditing && hasDescription"
-			id="description-preview"
-			@click="clickedPreview"
-			v-html="renderedDescription" />
+		<div v-if="!descriptionEditing && hasDescription" @click="clickedPreview">
+			<RichText
+				id="description-preview"
+				:text="description"
+				:arguments="{}"
+				:autolink="true"
+				:use-markdown="true" />
+		</div>
 		<p v-else-if="!descriptionEditing" class="placeholder" @click="showEditor()">
 			{{ t('deck', 'Write a description …') }}
 		</p>
@@ -73,23 +77,18 @@
 </template>
 
 <script>
-import MarkdownIt from 'markdown-it'
-import MarkdownItTaskLists from 'markdown-it-task-lists'
+import RichText from '@juliushaertl/vue-richtext'
 import AttachmentList from './AttachmentList'
 import { Actions, ActionButton, Modal } from '@nextcloud/vue'
 import { formatFileSize } from '@nextcloud/files'
 import { generateUrl } from '@nextcloud/router'
 import { mapState, mapGetters } from 'vuex'
 
-const markdownIt = new MarkdownIt({
-	linkify: true,
-})
-markdownIt.use(MarkdownItTaskLists, { enabled: true, label: true, labelAfter: true })
-
 export default {
 	name: 'Description',
 	components: {
 		VueEasymde: () => import('vue-easymde/dist/VueEasyMDE.common'),
+		RichText,
 		Actions,
 		ActionButton,
 		Modal,
@@ -104,7 +103,6 @@ export default {
 	data() {
 		return {
 			description: '',
-			markdownIt: null,
 			descriptionEditing: false,
 			mdeConfig: {
 				autoDownloadFontAwesome: false,
@@ -155,9 +153,6 @@ export default {
 		formattedFileSize() {
 			return (filesize) => formatFileSize(filesize)
 		},
-		renderedDescription() {
-			return markdownIt.render(this.card.description || '')
-		},
 		hasDescription() {
 			return this.card?.description?.trim?.() !== ''
 		},
@@ -191,9 +186,10 @@ export default {
 		},
 		clickedPreview(e) {
 			if (e.target.getAttribute('type') === 'checkbox') {
-				const clickedIndex = [...document.querySelector('#description-preview').querySelectorAll('input')].findIndex((li) => li.id === e.target.id)
+				const clickedIndex = [...document.querySelector('#description-preview').querySelectorAll('input')].findIndex((li) => li === e.target)
 				const reg = /\[(X|\s|_|-)\]/ig
 				let nth = 0
+
 				const updatedDescription = this.card.description.replace(reg, (match, i, original) => {
 					let result = match
 					if ('' + nth++ === '' + clickedIndex) {
