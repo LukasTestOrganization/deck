@@ -35,6 +35,7 @@ use OCA\Deck\Db\IPermissionMapper;
 use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
+use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Event\AclCreatedEvent;
 use OCA\Deck\Event\AclDeletedEvent;
 use OCA\Deck\Event\AclUpdatedEvent;
@@ -54,6 +55,7 @@ use OCA\Deck\BadRequestException;
 class BoardService {
 	private $boardMapper;
 	private $stackMapper;
+	private $cardMapper;
 	private $labelMapper;
 	private $aclMapper;
 	/** @var IConfig */
@@ -75,6 +77,7 @@ class BoardService {
 	public function __construct(
 		BoardMapper $boardMapper,
 		StackMapper $stackMapper,
+		CardMapper $cardMapper,
 		IConfig $config,
 		IL10N $l10n,
 		LabelMapper $labelMapper,
@@ -91,6 +94,7 @@ class BoardService {
 	) {
 		$this->boardMapper = $boardMapper;
 		$this->stackMapper = $stackMapper;
+		$this->cardMapper = $cardMapper;
 		$this->labelMapper = $labelMapper;
 		$this->config = $config;
 		$this->aclMapper = $aclMapper;
@@ -667,6 +671,27 @@ class BoardService {
 		return $newBoard;
 	}
 
+	/**
+	 * @param $id
+	 * @return Board
+	 * @throws DoesNotExistException
+	 * @throws \OCA\Deck\NoPermissionException
+	 * @throws \OCP\AppFramework\Db\MultipleObjectsReturnedException
+	 * @throws BadRequestException
+	 */
+	public function export($id) {
+		if (is_numeric($id) === false) {
+			throw new BadRequestException('board id must be a number');
+		}
+
+		$this->permissionService->checkPermission($this->boardMapper, $id, Acl::PERMISSION_READ);
+		$board = $this->boardMapper->find($id);
+		$this->enrichWithCards($board);
+		$this->enrichWithLabels($board);
+
+		return $board;
+	}
+
 	private function enrichWithStacks($board, $since = -1) {
 		$stacks = $this->stackMapper->findAll($board->getId(), null, null, $since);
 
@@ -693,5 +718,24 @@ class BoardService {
 			return;
 		}
 		$board->setUsers(array_values($boardUsers));
+	}
+	
+	private function enrichWithCards($board, $since = -1) {
+		$stacks = $this->stackMapper->findAll($board->getId(), null, null, $since);
+		foreach ($stacks as $stack) {
+			$cards = $this->cardMapper->findAllByStack($stack->getId());
+			$fullCards = [];
+			foreach ($cards as $card) {
+				$fullCard = $this->cardMapper->find($card->getId());
+				array_push($fullCards, $fullCard);
+			}
+			$stack->setCards($fullCards);
+		}
+
+		if (\count($stacks) === 0) {
+			return;
+		}
+
+		$board->setStacks($stacks);
 	}
 }
