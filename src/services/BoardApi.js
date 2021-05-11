@@ -177,7 +177,7 @@ export class BoardApi {
 										row += label.title + ', '
 									})
 									if (card[field].length > 0) {
-										row = row.slice(0, -1)
+										row = row.slice(0, -2)
 									}
 									row += '"' + '\t'
 								} else {
