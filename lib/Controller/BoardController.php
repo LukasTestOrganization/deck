@@ -159,6 +159,7 @@ class BoardController extends ApiController {
 	/**
 	 * @NoAdminRequired
 	 * @param $boardId
+	 * @return \OCP\Deck\DB\Board
 	 */
 	public function export($boardId) {
 		

@@ -720,8 +720,8 @@ class BoardService {
 		$board->setUsers(array_values($boardUsers));
 	}
 	
-	private function enrichWithCards($board, $since = -1) {
-		$stacks = $this->stackMapper->findAll($board->getId(), null, null, $since);
+	private function enrichWithCards($board) {
+		$stacks = $this->stackMapper->findAll($board->getId());
 		foreach ($stacks as $stack) {
 			$cards = $this->cardMapper->findAllByStack($stack->getId());
 			$fullCards = [];
