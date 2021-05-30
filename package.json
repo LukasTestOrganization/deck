@@ -47,6 +47,7 @@
 		"lodash": "^4.17.21",
 		"markdown-it": "^12.0.6",
 		"markdown-it-task-lists": "^2.1.1",
+		"markdown-it-for-inline": "^0.1.1",
 		"moment": "^2.29.1",
 		"nextcloud-vue-collections": "^0.9.0",
 		"p-queue": "^6.6.2",

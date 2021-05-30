@@ -75,6 +75,7 @@
 <script>
 import MarkdownIt from 'markdown-it'
 import MarkdownItTaskLists from 'markdown-it-task-lists'
+import MarkdownItForInline from 'markdown-it-for-inline'
 import AttachmentList from './AttachmentList'
 import { Actions, ActionButton, Modal } from '@nextcloud/vue'
 import { formatFileSize } from '@nextcloud/files'
@@ -85,6 +86,10 @@ const markdownIt = new MarkdownIt({
 	linkify: true,
 })
 markdownIt.use(MarkdownItTaskLists, { enabled: true, label: true, labelAfter: true })
+
+markdownIt.use(MarkdownItForInline, 'url_new_win', 'link_open', function(tokens, idx) {
+	tokens[idx].attrPush(['target', '_blank'])
+})
 
 export default {
 	name: 'Description',
