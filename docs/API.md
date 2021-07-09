@@ -96,7 +96,7 @@ If available the ETag will also be part of JSON response objects as shown below 
 
 # Changelog
 
-## 1.0.0 (unreleased)
+## 1.0.0
 
 - The maximum length of the card title has been extended from 100 to 255 characters
 - The API will now return a 400 Bad request response if the length limitation of a board, stack or card title is exceeded
