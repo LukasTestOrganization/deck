@@ -59,13 +59,13 @@ class BoardImport extends Command {
 	/**
 	 * Data object created from JSON of origin system
 	 *
-	 * @var StdClass
+	 * @var \StdClass
 	 */
 	private $data;
 	/**
 	 * Data object created from settings JSON
 	 *
-	 * @var StdClass
+	 * @var \StdClass
 	 */
 	private $settings;
 	/**
@@ -99,6 +99,9 @@ class BoardImport extends Command {
 		$this->userManager = $userManager;
 	}
 
+	/**
+	 * @return void
+	 */
 	protected function configure() {
 		$this
 			->setName('deck:import')
@@ -129,6 +132,8 @@ class BoardImport extends Command {
 
 	/**
 	 * @inheritDoc
+	 *
+	 * @return void
 	 */
 	protected function interact(InputInterface $input, OutputInterface $output) {
 		$this->validateSystem($input, $output);
@@ -138,7 +143,7 @@ class BoardImport extends Command {
 		$this->validateOwner();
 	}
 
-	public function validateData(InputInterface $input, OutputInterface $output) {
+	public function validateData(InputInterface $input, OutputInterface $output): void {
 		$filename = $input->getOption('data');
 		if (!is_file($filename)) {
 			$helper = $this->getHelper('question');
@@ -167,13 +172,16 @@ class BoardImport extends Command {
 		}
 	}
 
-	private function validateOwner() {
+	private function validateOwner(): void {
 		$this->settings->owner = $this->userManager->get($this->settings->owner);
 		if (!$this->settings->owner) {
 			throw new \LogicException('Owner "' . $this->settings->owner . '" not found on Nextcloud. Check setting json.');
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	private function validateUsers() {
 		if (empty($this->settings->uidRelation)) {
 			return;
@@ -195,6 +203,9 @@ class BoardImport extends Command {
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	private function validateSystem(InputInterface $input, OutputInterface $output) {
 		if (in_array($input->getOption('system'), $this->allowedSystems)) {
 			return;
@@ -210,7 +221,7 @@ class BoardImport extends Command {
 		$input->setOption('system', $system);
 	}
 
-	private function validateSettings(InputInterface $input, OutputInterface $output) {
+	private function validateSettings(InputInterface $input, OutputInterface $output): void {
 		if (!is_file($input->getOption('setting'))) {
 			$helper = $this->getHelper('question');
 			$question = new Question(
@@ -262,7 +273,7 @@ class BoardImport extends Command {
 		return 0;
 	}
 
-	private function checklistItem($item) {
+	private function checklistItem($item): string {
 		if (($item->state == 'incomplete')) {
 			$string_start = '- [ ]';
 		} else {
@@ -272,7 +283,7 @@ class BoardImport extends Command {
 		return $check_item_string;
 	}
 
-	public function formulateChecklistText($checklist) {
+	public function formulateChecklistText($checklist): string {
 		$checklist_string = "\n\n## {$checklist->name}\n";
 		foreach ($checklist->checkItems as $item) {
 			$checklist_item_string = $this->checklistItem($item);
@@ -281,7 +292,7 @@ class BoardImport extends Command {
 		return $checklist_string;
 	}
 
-	private function importCards() {
+	private function importCards(): void {
 		foreach ($this->data->checklists as $checklist) {
 			$checklists[$checklist->idCard][$checklist->id] = $this->formulateChecklistText($checklist);
 		}
@@ -318,7 +329,7 @@ class BoardImport extends Command {
 		}
 	}
 
-	private function importComments(\OCP\AppFramework\Db\Entity $card, $trelloCard) {
+	private function importComments(\OCP\AppFramework\Db\Entity $card, $trelloCard): void {
 		$comments = array_filter(
 			$this->data->actions,
 			function ($a) use ($trelloCard) {
@@ -364,7 +375,7 @@ class BoardImport extends Command {
 		return $text;
 	}
 
-	public function associateCardToLabels(\OCP\AppFramework\Db\Entity $card, $trelloCard) {
+	public function associateCardToLabels(\OCP\AppFramework\Db\Entity $card, $trelloCard): void {
 		foreach ($trelloCard->labels as $label) {
 			$this->cardMapper->assignLabel(
 				$card->getId(),
@@ -373,7 +384,7 @@ class BoardImport extends Command {
 		}
 	}
 
-	private function importStacks() {
+	private function importStacks(): void {
 		$this->stacks = [];
 		foreach ($this->data->lists as $order => $list) {
 			$stack = new Stack();
@@ -388,7 +399,7 @@ class BoardImport extends Command {
 		}
 	}
 
-	private function translateColor($color) {
+	private function translateColor($color): string {
 		switch ($color) {
 			case 'red':
 				return 'ff0000';
@@ -415,7 +426,7 @@ class BoardImport extends Command {
 		}
 	}
 
-	private function importBoard() {
+	private function importBoard(): void {
 		$this->board = $this->boardService->create(
 			$this->data->name,
 			$this->settings->owner->getUID(),
@@ -423,7 +434,7 @@ class BoardImport extends Command {
 		);
 	}
 
-	public function importLabels() {
+	public function importLabels(): void {
 		$this->labels = [];
 		foreach ($this->data->labels as $label) {
 			if (empty($label->name)) {
@@ -440,7 +451,7 @@ class BoardImport extends Command {
 		}
 	}
 
-	private function setUserId() {
+	private function setUserId(): void {
 		$propertyPermissionService = new \ReflectionProperty($this->labelService, 'permissionService');
 		$propertyPermissionService->setAccessible(true);
 		$permissionService = $propertyPermissionService->getValue($this->labelService);
