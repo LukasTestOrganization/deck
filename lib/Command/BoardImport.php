@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2018 Vitor Mattos <vitor@php.rio>
+ * @copyright Copyright (c) 2021 Vitor Mattos <vitor@php.rio>
  *
  * @author Vitor Mattos <vitor@php.rio>
  *
@@ -24,24 +24,15 @@
 namespace OCA\Deck\Command;
 
 use JsonSchema\Validator;
-use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
-use OCA\Deck\Db\BoardMapper;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\LabelService;
-use OCA\Deck\Service\PermissionService;
-use OCA\Deck\Service\StackService;
-use OCP\AppFramework\Db\DoesNotExistException;
-use OCP\AppFramework\Db\MultipleObjectsReturnedException;
-use OCP\IGroupManager;
 use OCP\IUserManager;
-use OCP\IUserSession;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -51,7 +42,6 @@ use Symfony\Component\Console\Question\Question;
 class BoardImport extends Command {
 	/** @var BoardService */
 	private $boardService;
-	// protected $cardMapper;
 	/** @var LabelService */
 	private $labelService;
 	/** @var StackMapper */
@@ -60,41 +50,24 @@ class BoardImport extends Command {
 	private $cardMapper;
 	/** @var IUserManager */
 	private $userManager;
-	// /** @var IGroupManager */
-	// private $groupManager;
-	// private $assignedUsersMapper;
 	private $allowedSystems = ['trello'];
 	/** @var Board */
 	private $board;
 
 	public function __construct(
-		// BoardMapper $boardMapper,
 		BoardService $boardService,
 		LabelService $labelService,
 		StackMapper $stackMapper,
 		CardMapper $cardMapper,
-		// IUserSession $userSession,
-		// StackMapper $stackMapper,
-		// CardMapper $cardMapper,
-		// AssignmentMapper $assignedUsersMapper,
 		IUserManager $userManager
-		// IGroupManager $groupManager
 	) {
 		parent::__construct();
 
-		// $this->cardMapper = $cardMapper;
 		$this->boardService = $boardService;
 		$this->labelService = $labelService;
 		$this->stackMapper = $stackMapper;
 		$this->cardMapper = $cardMapper;
-
-		// $this->userSession = $userSession;
-		// $this->stackMapper = $stackMapper;
-		// $this->assignedUsersMapper = $assignedUsersMapper;
-		// $this->boardMapper = $boardMapper;
-
 		$this->userManager = $userManager;
-		// $this->groupManager = $groupManager;
 	}
 
 	protected function configure() {
@@ -246,37 +219,13 @@ class BoardImport extends Command {
 	 * @param InputInterface $input
 	 * @param OutputInterface $output
 	 * @return void
-	 * @throws DoesNotExistException
-	 * @throws MultipleObjectsReturnedException
-	 * @throws \ReflectionException
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		// $this->boardService->setUserId($this->settings->owner->getUID());
 		$this->setUserId($this->settings->owner->getUID());
-		// $this->userSession->setUser($this->settings->owner);
 		$this->importBoard();
 		$this->importLabels();
 		$this->importStacks();
 		$this->importCards();
-		// $boards = $this->boardService->findAll();
-
-		// $data = [];
-		// foreach ($boards as $board) {
-		// 	$fullBoard = $this->boardMapper->find($board->getId(), true, true);
-		// 	$data[$board->getId()] = (array)$fullBoard->jsonSerialize();
-		// 	$stacks = $this->stackMapper->findAll($board->getId());
-		// 	foreach ($stacks as $stack) {
-		// 		$data[$board->getId()]['stacks'][] = (array)$stack->jsonSerialize();
-		// 		$cards = $this->cardMapper->findAllByStack($stack->getId());
-		// 		foreach ($cards as $card) {
-		// 			$fullCard = $this->cardMapper->find($card->getId());
-		// 			$assignedUsers = $this->assignedUsersMapper->findAll($card->getId());
-		// 			$fullCard->setAssignedUsers($assignedUsers);
-		// 			$data[$board->getId()]['stacks'][$stack->getId()]['cards'][] = (array)$fullCard->jsonSerialize();
-		// 		}
-		// 	}
-		// }
-		// $output->writeln(json_encode($data, JSON_PRETTY_PRINT));
 		return self::SUCCESS;
 	}
 
@@ -300,14 +249,12 @@ class BoardImport extends Command {
 	}
 
 	private function importCards() {
-		# Save checklist content into a dictionary (_should_ work even if a card has multiple checklists
 		foreach ($this->data->checklists as $checklist) {
 			$checklists[$checklist->idCard][$checklist->id] = $this->formulateChecklistText($checklist);
 		}
 		$this->data->checklists = $checklists;
 
 		foreach ($this->data->cards as $trelloCard) {
-			# Check whether a card is archived, if true, skipping to the next card
 			if ($trelloCard->closed) {
 				continue;
 			}
@@ -392,7 +339,6 @@ class BoardImport extends Command {
 			$this->settings->owner->getUID(),
 			$this->settings->color
 		);
-		// $this->boardService->find($this->board->getId());
 	}
 
 	public function importLabels() {
