@@ -299,6 +299,7 @@ class BoardImport extends Command {
 	}
 
 	private function importCards(): void {
+		$checklists = [];
 		foreach ($this->data->checklists as $checklist) {
 			$checklists[$checklist->idCard][$checklist->id] = $this->formulateChecklistText($checklist);
 		}
@@ -458,9 +459,16 @@ class BoardImport extends Command {
 	}
 
 	private function setUserId(): void {
+		if (!property_exists($this->labelService, 'permissionService')) {
+			return;
+		}
 		$propertyPermissionService = new \ReflectionProperty($this->labelService, 'permissionService');
 		$propertyPermissionService->setAccessible(true);
 		$permissionService = $propertyPermissionService->getValue($this->labelService);
+
+		if (!property_exists($permissionService, 'userId')) {
+			return;
+		}
 
 		$propertyUserId = new \ReflectionProperty($permissionService, 'userId');
 		$propertyUserId->setAccessible(true);
