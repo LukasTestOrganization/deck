@@ -31,6 +31,7 @@ use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\LabelService;
+use OCP\IDBConnection;
 use OCP\IUserManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -48,6 +49,8 @@ class BoardImport extends Command {
 	private $stackMapper;
 	/** @var CardMapper */
 	private $cardMapper;
+	/** @var IDBConnection */
+	private $connection;
 	/** @var IUserManager */
 	private $userManager;
 	private $allowedSystems = ['trello'];
@@ -59,6 +62,7 @@ class BoardImport extends Command {
 		LabelService $labelService,
 		StackMapper $stackMapper,
 		CardMapper $cardMapper,
+		IDBConnection $connection,
 		IUserManager $userManager
 	) {
 		parent::__construct();
@@ -67,6 +71,7 @@ class BoardImport extends Command {
 		$this->labelService = $labelService;
 		$this->stackMapper = $stackMapper;
 		$this->cardMapper = $cardMapper;
+		$this->connection = $connection;
 		$this->userManager = $userManager;
 	}
 
@@ -226,7 +231,7 @@ class BoardImport extends Command {
 		$this->importLabels();
 		$this->importStacks();
 		$this->importCards();
-		return self::SUCCESS;
+		return 0;
 	}
 
 	private function checklistItem($item) {
@@ -255,8 +260,11 @@ class BoardImport extends Command {
 		$this->data->checklists = $checklists;
 
 		foreach ($this->data->cards as $trelloCard) {
+			$card = new Card();
+			$lastModified = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->dateLastActivity);
+			$card->setLastModified($lastModified->format('Y-m-d H:i:s'));
 			if ($trelloCard->closed) {
-				continue;
+				$card->setDeletedAt($lastModified->format('U'));
 			}
 			if ((count($trelloCard->idChecklists) !== 0)) {
 				foreach ($this->data->checklists[$trelloCard->id] as $checklist) {
@@ -264,28 +272,72 @@ class BoardImport extends Command {
 				}
 			}
 
-			$card = new Card();
 			$card->setTitle($trelloCard->name);
-			$card->setStackId($this->stacks[$trelloCard->idList]);
+			$card->setStackId($this->stacks[$trelloCard->idList]->getId());
 			$card->setType('plain');
 			$card->setOrder($trelloCard->idShort);
 			$card->setOwner($this->settings->owner->getUID());
 			$card->setDescription($trelloCard->desc);
 			if ($trelloCard->due) {
-				$duedate = \DateTime::createFromFormat('Y-m-d\TH:i:s.000\Z', $trelloCard->due)
+				$duedate = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->due)
 					->format('Y-m-d H:i:s');
 				$card->setDuedate($duedate);
 			}
 			$card = $this->cardMapper->insert($card);
 
-			$this->associateCardToLabels($card->getId(), $trelloCard);
+			$this->associateCardToLabels($card, $trelloCard);
+			$this->importComments($card, $trelloCard);
 		}
 	}
 
-	public function associateCardToLabels($cardId, $card) {
-		foreach ($card->labels as $label) {
+	private function importComments($card, $trelloCard) {
+		$comments = array_filter(
+			$this->data->actions,
+			fn($a) => $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id
+		);
+		foreach ($comments as $trelloComment) {
+			if (!empty($this->settings->uidRelation->{$trelloComment->memberCreator->username})) {
+				$actor = $this->settings->uidRelation->{$trelloComment->memberCreator->username}->getUID();
+			} else {
+				$actor = $this->settings->owner->getUID();
+			}
+			$message = $this->replaceUsernames($trelloComment->data->text);
+			$qb = $this->connection->getQueryBuilder();
+
+			$values = [
+				'parent_id' => $qb->createNamedParameter(0),
+				'topmost_parent_id' => $qb->createNamedParameter(0),
+				'children_count' => $qb->createNamedParameter(0),
+				'actor_type' => $qb->createNamedParameter('users'),
+				'actor_id' => $qb->createNamedParameter($actor),
+				'message' => $qb->createNamedParameter($message),
+				'verb' => $qb->createNamedParameter('comment'),
+				'creation_timestamp' => $qb->createNamedParameter(
+					\DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloComment->date)
+					->format('Y-m-d H:i:s')
+				),
+				'latest_child_timestamp' => $qb->createNamedParameter(null),
+				'object_type' => $qb->createNamedParameter('deckCard'),
+				'object_id' => $qb->createNamedParameter($card->getId()),
+			];
+
+			$qb->insert('comments')
+				->values($values)
+				->execute();
+		}
+	}
+
+	private function replaceUsernames($text) {
+		foreach ($this->settings->uidRelation as $trello => $nextcloud) {
+			$text = str_replace($trello, $nextcloud->getUID(), $text);
+		}
+		return $text;
+	}
+
+	public function associateCardToLabels($card, $trelloCard) {
+		foreach ($trelloCard->labels as $label) {
 			$this->cardMapper->assignLabel(
-				$cardId,
+				$card->getId(),
 				$this->labels[$label->id]->getId()
 			);
 		}
@@ -294,10 +346,10 @@ class BoardImport extends Command {
 	private function importStacks() {
 		$this->stacks = [];
 		foreach ($this->data->lists as $order => $list) {
-			if ($list->closed) {
-				continue;
-			}
 			$stack = new Stack();
+			if ($list->closed) {
+				$stack->setDeletedAt(time());
+			}
 			$stack->setTitle($list->name);
 			$stack->setBoardId($this->board->getId());
 			$stack->setOrder($order + 1);
