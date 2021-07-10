@@ -9,7 +9,8 @@
 		}
 	],
 	"require": {
-		"cogpowered/finediff": "0.3.*"
+		"cogpowered/finediff": "0.3.*",
+		"justinrainbow/json-schema": "^5.2"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-master",
