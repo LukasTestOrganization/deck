@@ -155,7 +155,9 @@ class BoardImport extends Command {
 			return;
 		}
 		foreach ($this->settings->uidRelation as $trelloUid => $nextcloudUid) {
-			$user = array_filter($this->data->members, fn ($u) => $u->username === $trelloUid);
+			$user = array_filter($this->data->members, function ($u) use ($trelloUid) {
+				return $u->username === $trelloUid;
+			});
 			if (!$user) {
 				throw new \LogicException('Trello user ' . $trelloUid . ' not found in property "members" of json data');
 			}
@@ -211,7 +213,9 @@ class BoardImport extends Command {
 		);
 		if (!$validator->isValid()) {
 			$output->writeln('<error>Invalid setting file</error>');
-			$output->writeln(array_map(fn ($v) => $v['message'], $validator->getErrors()));
+			$output->writeln(array_map(function ($v) {
+				return $v['message'];
+			}, $validator->getErrors()));
 			$output->writeln('Valid schema:');
 			$output->writeln(print_r(file_get_contents(__DIR__ . '/fixtures/setting-schema.json'), true));
 			$input->setOption('setting', null);
@@ -292,7 +296,9 @@ class BoardImport extends Command {
 	private function importComments($card, $trelloCard) {
 		$comments = array_filter(
 			$this->data->actions,
-			fn ($a) => $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id
+			function ($a) use ($trelloCard) {
+				return $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id;
+			}
 		);
 		foreach ($comments as $trelloComment) {
 			if (!empty($this->settings->uidRelation->{$trelloComment->memberCreator->username})) {
