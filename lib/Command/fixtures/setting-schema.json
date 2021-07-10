@@ -1,0 +1,17 @@
+{
+    "type": "object",
+    "properties": {
+        "uidRelation": {
+            "type": "object"
+        },
+        "owner": {
+            "type": "string",
+            "required": true
+        },
+        "color": {
+            "type": "string",
+            "required": true,
+            "pattern": "^[0-9a-fA-F]{6}$"
+        }
+    }
+}
