@@ -238,7 +238,7 @@ OC.L10N.register(
     "seconds ago" : "przed chwilą",
     "All boards" : "Wszystkie tablice",
     "Archived boards" : "Zarchiwizowane tablice",
-    "Shared with you" : "Dzielone z Tobą",
+    "Shared with you" : "Udostępnione Tobie",
     "Use bigger card view" : "Użyj większego widoku karty",
     "Show boards in calendar/tasks" : "Pokaż tablice w kalendarzu/zadaniach",
     "Limit deck usage of groups" : "Ogranicz użycie tablic dla grup",
