@@ -1,8 +1,8 @@
 <?php
 /**
- * @copyright Copyright (c) 2018 Julius Härtl <jus@bitgrid.net>
+ * @copyright Copyright (c) 2018 Vitor Mattos <vitor@php.rio>
  *
- * @author Julius Härtl <jus@bitgrid.net>
+ * @author Vitor Mattos <vitor@php.rio>
  *
  * @license GNU AGPL version 3 or any later version
  *
