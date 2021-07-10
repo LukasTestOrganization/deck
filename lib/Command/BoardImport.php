@@ -68,6 +68,18 @@ class BoardImport extends Command {
 	 * @var StdClass
 	 */
 	private $settings;
+	/**
+	 * Array of stacks
+	 *
+	 * @var Stack[]
+	 */
+	private $stacks = [];
+	/**
+	 * Array of labels
+	 *
+	 * @var Label[]
+	 */
+	private $labels = [];
 
 	public function __construct(
 		BoardService $boardService,
