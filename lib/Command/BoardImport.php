@@ -144,7 +144,7 @@ class BoardImport extends Command {
 		$this->validateOwner();
 	}
 
-	public function validateData(InputInterface $input, OutputInterface $output): void {
+	private function validateData(InputInterface $input, OutputInterface $output): void {
 		$filename = $input->getOption('data');
 		if (!is_file($filename)) {
 			$helper = $this->getHelper('question');
@@ -284,7 +284,7 @@ class BoardImport extends Command {
 		return $check_item_string;
 	}
 
-	public function formulateChecklistText($checklist): string {
+	private function formulateChecklistText($checklist): string {
 		$checklist_string = "\n\n## {$checklist->name}\n";
 		foreach ($checklist->checkItems as $item) {
 			$checklist_item_string = $this->checklistItem($item);
@@ -376,7 +376,7 @@ class BoardImport extends Command {
 		return $text;
 	}
 
-	public function associateCardToLabels(\OCP\AppFramework\Db\Entity $card, $trelloCard): void {
+	private function associateCardToLabels(\OCP\AppFramework\Db\Entity $card, $trelloCard): void {
 		foreach ($trelloCard->labels as $label) {
 			$this->cardMapper->assignLabel(
 				$card->getId(),
@@ -435,7 +435,7 @@ class BoardImport extends Command {
 		);
 	}
 
-	public function importLabels(): void {
+	private function importLabels(): void {
 		$this->labels = [];
 		foreach ($this->data->labels as $label) {
 			if (empty($label->name)) {
