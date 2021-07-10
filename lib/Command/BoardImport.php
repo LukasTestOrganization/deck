@@ -267,10 +267,15 @@ class BoardImport extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int {
 		$this->setUserId();
+		$output->writeln('Importing board...');
 		$this->importBoard();
+		$output->writeln('Importing labels...');
 		$this->importLabels();
+		$output->writeln('Importing stacks...');
 		$this->importStacks();
+		$output->writeln('Importing cards...');
 		$this->importCards();
+		$output->writeln('Done!');
 		return 0;
 	}
 
