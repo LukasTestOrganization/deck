@@ -106,8 +106,7 @@ class BoardImport extends Command {
 	/**
 	 * @inheritDoc
 	 */
-	protected function interact(InputInterface $input, OutputInterface $output)
-	{
+	protected function interact(InputInterface $input, OutputInterface $output) {
 		$this->validateSystem($input, $output);
 		$this->validateData($input, $output);
 		$this->validateSettings($input, $output);
@@ -156,7 +155,7 @@ class BoardImport extends Command {
 			return;
 		}
 		foreach ($this->settings->uidRelation as $trelloUid => $nextcloudUid) {
-			$user = array_filter($this->data->members, fn($u) => $u->username === $trelloUid);
+			$user = array_filter($this->data->members, fn ($u) => $u->username === $trelloUid);
 			if (!$user) {
 				throw new \LogicException('Trello user ' . $trelloUid . ' not found in property "members" of json data');
 			}
@@ -197,7 +196,7 @@ class BoardImport extends Command {
 					throw new \RuntimeException(
 						'Setting file not found'
 					);
-				}		
+				}
 				return $answer;
 			});
 			$setting = $helper->ask($input, $output, $question);
@@ -212,7 +211,7 @@ class BoardImport extends Command {
 		);
 		if (!$validator->isValid()) {
 			$output->writeln('<error>Invalid setting file</error>');
-			$output->writeln(array_map(fn($v) => $v['message'], $validator->getErrors()));
+			$output->writeln(array_map(fn ($v) => $v['message'], $validator->getErrors()));
 			$output->writeln('Valid schema:');
 			$output->writeln(print_r(file_get_contents(__DIR__ . '/fixtures/setting-schema.json'), true));
 			$input->setOption('setting', null);
@@ -244,7 +243,7 @@ class BoardImport extends Command {
 		return $check_item_string;
 	}
 
-	function formulateChecklistText($checklist) {
+	public function formulateChecklistText($checklist) {
 		$checklist_string = "\n\n## {$checklist->name}\n";
 		foreach ($checklist->checkItems as $item) {
 			$checklist_item_string = $this->checklistItem($item);
@@ -293,7 +292,7 @@ class BoardImport extends Command {
 	private function importComments($card, $trelloCard) {
 		$comments = array_filter(
 			$this->data->actions,
-			fn($a) => $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id
+			fn ($a) => $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id
 		);
 		foreach ($comments as $trelloComment) {
 			if (!empty($this->settings->uidRelation->{$trelloComment->memberCreator->username})) {
