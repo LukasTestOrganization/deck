@@ -45,6 +45,7 @@
     </background-jobs>
     <commands>
         <command>OCA\Deck\Command\UserExport</command>
+        <command>OCA\Deck\Command\BoardImport</command>
     </commands>
     <activity>
         <settings>
