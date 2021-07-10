@@ -53,9 +53,21 @@ class BoardImport extends Command {
 	private $connection;
 	/** @var IUserManager */
 	private $userManager;
-	private $allowedSystems = ['trello'];
 	/** @var Board */
 	private $board;
+	private $allowedSystems = ['trello'];
+	/**
+	 * Data object created from JSON of origin system
+	 *
+	 * @var StdClass
+	 */
+	private $data;
+	/**
+	 * Data object created from settings JSON
+	 *
+	 * @var StdClass
+	 */
+	private $settings;
 
 	public function __construct(
 		BoardService $boardService,
@@ -226,10 +238,11 @@ class BoardImport extends Command {
 	/**
 	 * @param InputInterface $input
 	 * @param OutputInterface $output
-	 * @return void
+	 *
+	 * @return int
 	 */
-	protected function execute(InputInterface $input, OutputInterface $output) {
-		$this->setUserId($this->settings->owner->getUID());
+	protected function execute(InputInterface $input, OutputInterface $output): int {
+		$this->setUserId();
 		$this->importBoard();
 		$this->importLabels();
 		$this->importStacks();
@@ -293,7 +306,7 @@ class BoardImport extends Command {
 		}
 	}
 
-	private function importComments($card, $trelloCard) {
+	private function importComments(\OCP\AppFramework\Db\Entity $card, $trelloCard) {
 		$comments = array_filter(
 			$this->data->actions,
 			function ($a) use ($trelloCard) {
@@ -339,7 +352,7 @@ class BoardImport extends Command {
 		return $text;
 	}
 
-	public function associateCardToLabels($card, $trelloCard) {
+	public function associateCardToLabels(\OCP\AppFramework\Db\Entity $card, $trelloCard) {
 		foreach ($trelloCard->labels as $label) {
 			$this->cardMapper->assignLabel(
 				$card->getId(),
