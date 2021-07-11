@@ -23,6 +23,8 @@
 
 namespace OCA\Deck\Command\Helper;
 
+use OCA\Deck\Db\Assignment;
+use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
@@ -32,10 +34,13 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\LabelService;
 use OCP\IDBConnection;
+use OCP\IUser;
 use OCP\IUserManager;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+
+use function Amp\Promise\first;
 
 class TrelloHelper extends ImportAbstract implements ImportInterface {
 	/** @var BoardService */
@@ -44,10 +49,14 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 	private $stackMapper;
 	/** @var CardMapper */
 	private $cardMapper;
+	/** @var AssignmentMapper */
+	private $assignmentMapper;
 	/** @var IDBConnection */
 	private $connection;
 	/** @var IUserManager */
 	private $userManager;
+	/** @var TrelloActions */
+	private $trelloActions;
 	/** @var Board */
 	private $board;
 	/** @var LabelService */
@@ -70,21 +79,29 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 	 * @var Label[]
 	 */
 	private $labels = [];
+	/** @var Card[] */
+	private $cards = [];
+	/** @var IUser */
+	private $members = [];
 
 	public function __construct(
 		BoardService $boardService,
 		LabelService $labelService,
 		StackMapper $stackMapper,
 		CardMapper $cardMapper,
+		AssignmentMapper $assignmentMapper,
 		IDBConnection $connection,
-		IUserManager $userManager
+		IUserManager $userManager,
+		TrelloActions $trelloActions
 	) {
 		$this->boardService = $boardService;
 		$this->labelService = $labelService;
 		$this->stackMapper = $stackMapper;
 		$this->cardMapper = $cardMapper;
+		$this->assignmentMapper = $assignmentMapper;
 		$this->connection = $connection;
 		$this->userManager = $userManager;
+		$this->trelloActions = $trelloActions;
 	}
 
 	public function validate(InputInterface $input, OutputInterface $output): void {
@@ -103,7 +120,16 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		$output->writeln('Importing stacks...');
 		$this->importStacks();
 		$output->writeln('Importing cards...');
+		$this->proccessActions();
 		$this->importCards();
+	}
+
+	private function proccessActions() {
+		$total = count($this->data->actions) -1;
+		for ($i = $total; $i >= 0; $i--) {
+			$action = $this->data->actions[$i];
+			$this->trelloActions->{$action->type}($action);
+		}
 	}
 
 	private function validateData(InputInterface $input, OutputInterface $output): void {
@@ -129,9 +155,6 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		if (!$this->data) {
 			$output->writeln('<error>Is not a json file: ' . $filename . '</error>');
 			$this->validateData($input, $output);
-		}
-		if (!$this->data) {
-			$this->data = json_decode(file_get_contents($filename));
 		}
 	}
 
@@ -164,6 +187,8 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 			if (!$this->getSetting('uidRelation')->$trelloUid) {
 				throw new \LogicException('User on setting uidRelation not found: ' . $nextcloudUid);
 			}
+			$user = current($user);
+			$this->members[$user->id] = $this->getSetting('uidRelation')->$trelloUid;
 		}
 	}
 
@@ -218,9 +243,25 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 				$card->setDuedate($duedate);
 			}
 			$card = $this->cardMapper->insert($card);
+			$this->cards[$trelloCard->id] = $card;
 
 			$this->associateCardToLabels($card, $trelloCard);
 			$this->importComments($card, $trelloCard);
+			$this->assignToMember($card, $trelloCard);
+		}
+	}
+
+	private function assignToMember(Card $card, $trelloCard) {
+		$actions = $this->trelloActions->cards[$trelloCard->id];
+		if (empty($actions['member'])) {
+			return;
+		}
+		foreach ($actions['member'] as $member) {
+			$assignment = new Assignment();
+			$assignment->setCardId($card->getId());
+			$assignment->setParticipant($this->members[$member->data->idMember]->getUID());
+			$assignment->setType(Assignment::TYPE_USER);
+			$assignment = $this->assignmentMapper->insert($assignment);
 		}
 	}
 
