@@ -23,51 +23,26 @@
 
 namespace OCA\Deck\Command;
 
-use OCA\Deck\Db\CardMapper;
-use OCA\Deck\Db\StackMapper;
-use OCA\Deck\Service\BoardService;
-use OCA\Deck\Service\LabelService;
-use OCP\IDBConnection;
-use OCP\IUserManager;
+use OCA\Deck\Command\Helper\TrelloHelper;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class BoardImportTest extends \Test\TestCase {
-	/** @var BoardService */
-	private $boardService;
-	/** @var LabelService */
-	private $labelService;
-	/** @var StackMapper */
-	private $stackMapper;
-	/** @var CardMapper */
-	private $cardMapper;
-	/** @var IDBConnection */
-	private $connection;
-	/** @var IUserManager */
-	private $userManager;
+	/** @var TrelloHelper */
+	private $trelloHelper;
 	/** @var BoardImport */
-	private $boadImport;
+	private $boardImport;
 
 	public function setUp(): void {
 		parent::setUp();
-		$this->boardService = $this->createMock(BoardService::class);
-		$this->labelService = $this->createMock(LabelService::class);
-		$this->stackMapper = $this->createMock(StackMapper::class);
-		$this->cardMapper = $this->createMock(CardMapper::class);
-		$this->connection = $this->createMock(IDBConnection::class);
-		$this->userManager = $this->createMock(IUserManager::class);
-		$this->boadImport = new BoardImport(
-			$this->boardService,
-			$this->labelService,
-			$this->stackMapper,
-			$this->cardMapper,
-			$this->connection,
-			$this->userManager
+		$this->trelloHelper = $this->createMock(TrelloHelper::class);
+		$this->boardImport = new BoardImport(
+			$this->trelloHelper
 		);
 		$questionHelper = new QuestionHelper();
-		$this->boadImport->setHelperSet(
+		$this->boardImport->setHelperSet(
 			new HelperSet([
 				$questionHelper
 			])
@@ -80,49 +55,23 @@ class BoardImportTest extends \Test\TestCase {
 		$input->method('getOption')
 			->withConsecutive(
 				[$this->equalTo('system')],
-				[$this->equalTo('data')],
-				[$this->equalTo('setting')]
+				[$this->equalTo('setting')],
+				[$this->equalTo('data')]
 			)
 			->will($this->returnValueMap([
 				['system', 'trello'],
-				['data', __DIR__ . '/fixtures/data.json'],
-				['setting', __DIR__ . '/fixtures/setting.json']
+				['setting', __DIR__ . '/fixtures/setting-trello.json'],
+				['data', __DIR__ . '/fixtures/data-trello.json']
 			]));
 		$output = $this->createMock(OutputInterface::class);
 
-		$user = $this->createMock(\OCP\IUser::class);
-		$user
-			->method('getUID')
-			->willReturn('admin');
-		$this->userManager
-			->method('get')
-			->willReturn($user);
-		$this->userManager
-			->method('get')
-			->willReturn($user);
-		$board = $this->createMock(\OCA\Deck\Db\Board::class);
-		$this->boardService
+		$output
 			->expects($this->once())
-			->method('create')
-			->willReturn($board);
-		$label = $this->createMock(\OCA\Deck\Db\Label::class);
-		$this->labelService
-			->expects($this->once())
-			->method('create')
-			->willReturn($label);
-		$stack = $this->createMock(\OCA\Deck\Db\Stack::class);
-		$this->stackMapper
-			->expects($this->once())
-			->method('insert')
-			->willReturn($stack);
-		$card = $this->createMock(\OCA\Deck\Db\Card::class);
-		$this->cardMapper
-			->expects($this->once())
-			->method('insert')
-			->willReturn($card);
+			->method('writeLn')
+			->with('Done!');
 
-		$this->invokePrivate($this->boadImport, 'interact', [$input, $output]);
-		$actual = $this->invokePrivate($this->boadImport, 'execute', [$input, $output]);
+		$this->invokePrivate($this->boardImport, 'interact', [$input, $output]);
+		$actual = $this->invokePrivate($this->boardImport, 'execute', [$input, $output]);
 		$this->assertEquals(0, $actual);
 	}
 }
