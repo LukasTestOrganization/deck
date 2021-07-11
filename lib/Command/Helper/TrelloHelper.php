@@ -23,7 +23,6 @@
 
 namespace OCA\Deck\Command\Helper;
 
-use JsonSchema\Validator;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\Stack;

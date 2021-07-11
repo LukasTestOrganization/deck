@@ -13,7 +13,7 @@ class ImportAbstract {
 	/** @var \stdClass */
 	private $settings;
 
-	public function setCommand(Command $command) {
+	public function setCommand(Command $command): void {
 		$this->command = $command;
 	}
 

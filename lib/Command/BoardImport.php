@@ -93,7 +93,7 @@ class BoardImport extends Command {
 			->validate($input, $output);
 	}
 
-	private function setSystem(string $system) {
+	private function setSystem(string $system): void {
 		$this->system = $system;
 	}
 
