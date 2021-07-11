@@ -63,6 +63,9 @@ class UserExport extends Command {
 		$this->groupManager = $groupManager;
 	}
 
+	/**
+	 * @return void
+	 */
 	protected function configure() {
 		$this
 			->setName('deck:export')
