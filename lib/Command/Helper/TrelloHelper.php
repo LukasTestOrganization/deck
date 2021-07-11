@@ -23,6 +23,7 @@
 
 namespace OCA\Deck\Command\Helper;
 
+use OC\L10N\L10N;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\Assignment;
@@ -61,6 +62,8 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 	private $board;
 	/** @var LabelService */
 	private $labelService;
+	/** @var L10N */
+	private $l10n;
 	/**
 	 * Data object created from JSON of origin system
 	 *
@@ -92,7 +95,8 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		AssignmentMapper $assignmentMapper,
 		AclMapper $aclMapper,
 		IDBConnection $connection,
-		IUserManager $userManager
+		IUserManager $userManager,
+		L10N $l10n
 	) {
 		$this->boardService = $boardService;
 		$this->labelService = $labelService;
@@ -102,6 +106,7 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		$this->aclMapper = $aclMapper;
 		$this->connection = $connection;
 		$this->userManager = $userManager;
+		$this->l10n = $l10n;
 	}
 
 	public function validate(InputInterface $input, OutputInterface $output): void {
@@ -265,13 +270,8 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		if (empty($trelloCard->attachments)) {
 			return;
 		}
-		$translations = $this->getSetting('translations');
-		$attachmentsLabel = empty($translations->{'Attachments'}) ? 'Attachments' : $translations->{'Attachments'};
-		$URLLabel = empty($translations->{'URL'}) ? 'URL' : $translations->{'URL'};
-		$nameLabel = empty($translations->{'Name'}) ? 'Name' : $translations->{'Name'};
-		$dateLabel = empty($translations->{'Date'}) ? 'Date' : $translations->{'Date'};
-		$trelloCard->desc .= "\n\n## {$attachmentsLabel}\n";
-		$trelloCard->desc .= "| $URLLabel | $nameLabel | $dateLabel |\n";
+		$trelloCard->desc .= "\n\n## {$this->l10n->t('Attachments')}\n";
+		$trelloCard->desc .= "| {$this->l10n->t('URL')} | {$this->l10n->t('Name')} | {$this->l10n->t('date')} |\n";
 		$trelloCard->desc .= "|---|---|---|\n";
 		foreach ($trelloCard->attachments as $attachment) {
 			$name = $attachment->name === $attachment->url ? null : $attachment->name;
