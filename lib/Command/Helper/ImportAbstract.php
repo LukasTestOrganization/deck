@@ -1,4 +1,5 @@
 <?php
+
 namespace OCA\Deck\Command\Helper;
 
 use JsonSchema\Validator;
