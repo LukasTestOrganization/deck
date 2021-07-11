@@ -23,8 +23,10 @@
 
 namespace OCA\Deck\Command\Helper;
 
+use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
+use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\BoardService;

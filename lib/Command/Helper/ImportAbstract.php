@@ -29,7 +29,7 @@ class ImportAbstract {
 	 * Get a setting
 	 *
 	 * @param string $setting Setting name
-	 * @return \stdClass
+	 * @return mixed
 	 */
 	public function getSetting($setting) {
 		return $this->settings->$setting;
