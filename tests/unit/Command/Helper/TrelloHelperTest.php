@@ -94,6 +94,7 @@ class TrelloHelperTest extends \Test\TestCase {
 			->method('writeLn')
 			->withConsecutive(
 				['Importing board...'],
+				['Assign users to board...'],
 				['Importing labels...'],
 				['Importing stacks...'],
 				['Importing cards...']

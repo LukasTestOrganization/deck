@@ -23,6 +23,8 @@
 
 namespace OCA\Deck\Command\Helper;
 
+use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
@@ -40,8 +42,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
-use function Amp\Promise\first;
-
 class TrelloHelper extends ImportAbstract implements ImportInterface {
 	/** @var BoardService */
 	private $boardService;
@@ -51,6 +51,8 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 	private $cardMapper;
 	/** @var AssignmentMapper */
 	private $assignmentMapper;
+	/** @var AclMapper */
+	private $aclMapper;
 	/** @var IDBConnection */
 	private $connection;
 	/** @var IUserManager */
@@ -90,18 +92,18 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		StackMapper $stackMapper,
 		CardMapper $cardMapper,
 		AssignmentMapper $assignmentMapper,
+		AclMapper $aclMapper,
 		IDBConnection $connection,
-		IUserManager $userManager,
-		TrelloActions $trelloActions
+		IUserManager $userManager
 	) {
 		$this->boardService = $boardService;
 		$this->labelService = $labelService;
 		$this->stackMapper = $stackMapper;
 		$this->cardMapper = $cardMapper;
 		$this->assignmentMapper = $assignmentMapper;
+		$this->aclMapper = $aclMapper;
 		$this->connection = $connection;
 		$this->userManager = $userManager;
-		$this->trelloActions = $trelloActions;
 	}
 
 	public function validate(InputInterface $input, OutputInterface $output): void {
@@ -115,20 +117,26 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		$this->setUserId();
 		$output->writeln('Importing board...');
 		$this->importBoard();
+		$output->writeln('Assign users to board...');
+		$this->assignUsersToBoard();
 		$output->writeln('Importing labels...');
 		$this->importLabels();
 		$output->writeln('Importing stacks...');
 		$this->importStacks();
 		$output->writeln('Importing cards...');
-		$this->proccessActions();
 		$this->importCards();
 	}
 
-	private function proccessActions() {
-		$total = count($this->data->actions) -1;
-		for ($i = $total; $i >= 0; $i--) {
-			$action = $this->data->actions[$i];
-			$this->trelloActions->{$action->type}($action);
+	private function assignUsersToBoard() {
+		foreach ($this->members as $member) {
+			$acl = new Acl();
+			$acl->setBoardId($this->board->getId());
+			$acl->setType(Acl::PERMISSION_TYPE_USER);
+			$acl->setParticipant($member->getUid());
+			$acl->setPermissionEdit(true);
+			$acl->setPermissionShare($member->getUID() === $this->getSetting('owner')->getUID());
+			$acl->setPermissionManage($member->getUID() === $this->getSetting('owner')->getUID());
+			$this->aclMapper->insert($acl);
 		}
 	}
 
@@ -230,6 +238,7 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 					$trelloCard->desc .= "\n" . $checklist;
 				}
 			}
+			$this->appendAttachmentsToDescription($trelloCard);
 
 			$card->setTitle($trelloCard->name);
 			$card->setStackId($this->stacks[$trelloCard->idList]->getId());
@@ -251,15 +260,29 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		}
 	}
 
-	private function assignToMember(Card $card, $trelloCard) {
-		$actions = $this->trelloActions->cards[$trelloCard->id];
-		if (empty($actions['member'])) {
+	private function appendAttachmentsToDescription($trelloCard) {
+		if (empty($trelloCard->attachments)) {
 			return;
 		}
-		foreach ($actions['member'] as $member) {
+		$translations = $this->getSetting('translations');
+		$attachmentsLabel = empty($translations->{'Attachments'}) ? 'Attachments' : $translations->{'Attachments'};
+		$URLLabel = empty($translations->{'URL'}) ? 'URL' : $translations->{'URL'};
+		$nameLabel = empty($translations->{'Name'}) ? 'Name' : $translations->{'Name'};
+		$dateLabel = empty($translations->{'Date'}) ? 'Date' : $translations->{'Date'};
+		$trelloCard->desc .= "\n\n## {$attachmentsLabel}\n";
+		$trelloCard->desc .= "| $URLLabel | $nameLabel | $dateLabel |\n";
+		$trelloCard->desc .= "|---|---|---|\n";
+		foreach ($trelloCard->attachments as $attachment) {
+			$name = $attachment->name === $attachment->url ? null : $attachment->name;
+			$trelloCard->desc .= "| {$attachment->url} | {$name} | {$attachment->date} |\n";
+		}
+	}
+
+	private function assignToMember(Card $card, $trelloCard) {
+		foreach ($trelloCard->idMembers as $idMember) {
 			$assignment = new Assignment();
 			$assignment->setCardId($card->getId());
-			$assignment->setParticipant($this->members[$member->data->idMember]->getUID());
+			$assignment->setParticipant($this->members[$idMember]->getUID());
 			$assignment->setType(Assignment::TYPE_USER);
 			$assignment = $this->assignmentMapper->insert($assignment);
 		}
