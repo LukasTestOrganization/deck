@@ -23,6 +23,7 @@
 
 namespace OCA\Deck\Command;
 
+use OC\L10N\L10N;
 use OCA\Deck\Command\Helper\TrelloHelper;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\AssignmentMapper;
@@ -52,6 +53,8 @@ class TrelloHelperTest extends \Test\TestCase {
 	private $userManager;
 	/** @var TrelloHelper */
 	private $trelloHelper;
+	/** @var L10N */
+	private $l10n;
 	public function setUp(): void {
 		parent::setUp();
 		$this->boardService = $this->createMock(BoardService::class);
@@ -62,6 +65,7 @@ class TrelloHelperTest extends \Test\TestCase {
 		$this->aclMapper = $this->createMock(AclMapper::class);
 		$this->connection = $this->createMock(IDBConnection::class);
 		$this->userManager = $this->createMock(IUserManager::class);
+		$this->l10n = $this->createMock(L10N::class);
 		$this->trelloHelper = new TrelloHelper(
 			$this->boardService,
 			$this->labelService,
@@ -70,7 +74,8 @@ class TrelloHelperTest extends \Test\TestCase {
 			$this->assignmentMapper,
 			$this->aclMapper,
 			$this->connection,
-			$this->userManager
+			$this->userManager,
+			$this->l10n
 		);
 		$questionHelper = new QuestionHelper();
 		$command = new BoardImport($this->trelloHelper);

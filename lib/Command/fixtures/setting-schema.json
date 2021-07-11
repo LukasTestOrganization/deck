@@ -12,9 +12,6 @@
             "type": "string",
             "required": true,
             "pattern": "^[0-9a-fA-F]{6}$"
-        },
-        "translations": {
-            "type": "object"
         }
     }
 }
