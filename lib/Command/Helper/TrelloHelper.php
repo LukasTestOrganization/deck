@@ -23,7 +23,6 @@
 
 namespace OCA\Deck\Command\Helper;
 
-use OC\L10N\L10N;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\Assignment;
@@ -37,6 +36,7 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\LabelService;
 use OCP\IDBConnection;
+use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
 use Symfony\Component\Console\Input\InputInterface;
@@ -62,7 +62,7 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 	private $board;
 	/** @var LabelService */
 	private $labelService;
-	/** @var L10N */
+	/** @var IL10N */
 	private $l10n;
 	/**
 	 * Data object created from JSON of origin system
@@ -96,7 +96,7 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		AclMapper $aclMapper,
 		IDBConnection $connection,
 		IUserManager $userManager,
-		L10N $l10n
+		IL10N $l10n
 	) {
 		$this->boardService = $boardService;
 		$this->labelService = $labelService;
