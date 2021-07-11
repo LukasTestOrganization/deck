@@ -57,8 +57,6 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 	private $connection;
 	/** @var IUserManager */
 	private $userManager;
-	/** @var TrelloActions */
-	private $trelloActions;
 	/** @var Board */
 	private $board;
 	/** @var LabelService */
@@ -83,7 +81,7 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 	private $labels = [];
 	/** @var Card[] */
 	private $cards = [];
-	/** @var IUser */
+	/** @var IUser[] */
 	private $members = [];
 
 	public function __construct(
@@ -127,7 +125,7 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		$this->importCards();
 	}
 
-	private function assignUsersToBoard() {
+	private function assignUsersToBoard(): void {
 		foreach ($this->members as $member) {
 			$acl = new Acl();
 			$acl->setBoardId($this->board->getId());
@@ -260,6 +258,9 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	private function appendAttachmentsToDescription($trelloCard) {
 		if (empty($trelloCard->attachments)) {
 			return;
@@ -278,7 +279,7 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 		}
 	}
 
-	private function assignToMember(Card $card, $trelloCard) {
+	private function assignToMember(Card $card, $trelloCard): void {
 		foreach ($trelloCard->idMembers as $idMember) {
 			$assignment = new Assignment();
 			$assignment->setCardId($card->getId());
