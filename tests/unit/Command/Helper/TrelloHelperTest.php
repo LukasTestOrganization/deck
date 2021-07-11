@@ -24,6 +24,8 @@
 namespace OCA\Deck\Command;
 
 use OCA\Deck\Command\Helper\TrelloHelper;
+use OCA\Deck\Db\AclMapper;
+use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\BoardService;
@@ -56,6 +58,8 @@ class TrelloHelperTest extends \Test\TestCase {
 		$this->labelService = $this->createMock(LabelService::class);
 		$this->stackMapper = $this->createMock(StackMapper::class);
 		$this->cardMapper = $this->createMock(CardMapper::class);
+		$this->assignmentMapper = $this->createMock(AssignmentMapper::class);
+		$this->aclMapper = $this->createMock(AclMapper::class);
 		$this->connection = $this->createMock(IDBConnection::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		$this->trelloHelper = new TrelloHelper(
@@ -63,6 +67,8 @@ class TrelloHelperTest extends \Test\TestCase {
 			$this->labelService,
 			$this->stackMapper,
 			$this->cardMapper,
+			$this->assignmentMapper,
+			$this->aclMapper,
 			$this->connection,
 			$this->userManager
 		);
@@ -89,16 +95,6 @@ class TrelloHelperTest extends \Test\TestCase {
 				['setting', __DIR__ . '/../fixtures/setting-trello.json']
 			]));
 		$output = $this->createMock(OutputInterface::class);
-		$output
-			->expects($this->exactly(4))
-			->method('writeLn')
-			->withConsecutive(
-				['Importing board...'],
-				['Assign users to board...'],
-				['Importing labels...'],
-				['Importing stacks...'],
-				['Importing cards...']
-			);
 
 		$user = $this->createMock(\OCP\IUser::class);
 		$user
