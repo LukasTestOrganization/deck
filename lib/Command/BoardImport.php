@@ -61,7 +61,7 @@ class BoardImport extends Command {
 		$allowedSystems = glob(__DIR__ . '/Helper/*Helper.php');
 		$this->allowedSystems = array_map(function ($name) {
 			preg_match('/\/(?<system>\w+)Helper\.php$/', $name, $matches);
-			return strtolower($matches['system']);
+			return lcfirst($matches['system']);
 		}, $allowedSystems);
 		$this
 			->setName('deck:import')
