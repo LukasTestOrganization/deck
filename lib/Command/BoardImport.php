@@ -55,6 +55,11 @@ class BoardImport extends Command {
 	 * @return void
 	 */
 	protected function configure() {
+		$validSystems = glob(__DIR__ . '/Helper/*Helper.php');
+		$validSystems = array_map(function ($name) {
+			preg_match('/\/(?<system>\w+)Helper\.php$/', $name, $matches);
+			return strtolower($matches['system']);
+		}, $validSystems);
 		$this
 			->setName('deck:import')
 			->setDescription('Import data')
@@ -62,7 +67,7 @@ class BoardImport extends Command {
 				'system',
 				null,
 				InputOption::VALUE_REQUIRED,
-				'Source system for import. Available options: trello.',
+				'Source system for import. Available options: ' . implode(', ', $validSystems) . '.',
 				'trello'
 			)
 			->addOption(
