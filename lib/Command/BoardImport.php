@@ -123,7 +123,7 @@ class BoardImport extends Command {
 		}
 
 		$this->settings = json_decode(file_get_contents($settingFile));
-		$schemaPath = __DIR__ . '/fixtures/setting-' . $this->getSystem() . '-schema.json';
+		$schemaPath = __DIR__ . '/ImportHelper/fixtures/setting-' . $this->getSystem() . '-schema.json';
 		$validator = new Validator();
 		$validator->validate(
 			$this->settings,
