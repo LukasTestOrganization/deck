@@ -33,6 +33,12 @@ class ImportAbstract {
 	 * @inheritDoc
 	 */
 	public function getSetting($setting) {
+		if (!is_object($this->getCommand()->settings)) {
+			return;
+		}
+		if (!property_exists($this->getCommand()->settings, $setting)) {
+			return;
+		}
 		return $this->getCommand()->settings->$setting;
 	}
 }
