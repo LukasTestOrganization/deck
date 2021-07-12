@@ -94,7 +94,7 @@ class TrelloHelperTest extends \Test\TestCase {
 			->withConsecutive(
 				[$this->equalTo('system')],
 				[$this->equalTo('setting')],
-				[$this->equalTo('data')],
+				[$this->equalTo('data')]
 			)
 			->will($this->returnValueMap([
 				['system', 'trello'],
