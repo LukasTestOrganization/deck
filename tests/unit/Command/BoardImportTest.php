@@ -55,12 +55,12 @@ class BoardImportTest extends \Test\TestCase {
 		$input->method('getOption')
 			->withConsecutive(
 				[$this->equalTo('system')],
-				[$this->equalTo('setting')],
+				[$this->equalTo('config')],
 				[$this->equalTo('data')]
 			)
 			->will($this->returnValueMap([
 				['system', 'trello'],
-				['setting', __DIR__ . '/fixtures/setting-trello.json'],
+				['config', __DIR__ . '/fixtures/config-trello.json'],
 				['data', __DIR__ . '/fixtures/data-trello.json']
 			]));
 		$output = $this->createMock(OutputInterface::class);
