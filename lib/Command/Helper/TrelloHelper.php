@@ -132,13 +132,16 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 
 	private function assignUsersToBoard(): void {
 		foreach ($this->members as $member) {
+			if ($member->getUID() === $this->getSetting('owner')->getUID()) {
+				continue;
+			}
 			$acl = new Acl();
 			$acl->setBoardId($this->board->getId());
 			$acl->setType(Acl::PERMISSION_TYPE_USER);
-			$acl->setParticipant($member->getUid());
-			$acl->setPermissionEdit(true);
-			$acl->setPermissionShare($member->getUID() === $this->getSetting('owner')->getUID());
-			$acl->setPermissionManage($member->getUID() === $this->getSetting('owner')->getUID());
+			$acl->setParticipant($member->getUID());
+			$acl->setPermissionEdit(false);
+			$acl->setPermissionShare(false);
+			$acl->setPermissionManage(false);
 			$this->aclMapper->insert($acl);
 		}
 	}
