@@ -25,7 +25,7 @@ namespace OCA\Deck\Command;
 
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
-use OCA\Deck\Command\ImportHelper\ImportInterface;
+use OCA\Deck\Command\ImportHelper\ImportAbstract;
 use OCA\Deck\Command\ImportHelper\TrelloHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
