@@ -24,58 +24,22 @@
 namespace OCA\Deck\Command;
 
 use OCA\Deck\Command\ImportHelper\TrelloHelper;
-use OCA\Deck\Db\AclMapper;
-use OCA\Deck\Db\AssignmentMapper;
-use OCA\Deck\Db\CardMapper;
-use OCA\Deck\Db\StackMapper;
-use OCA\Deck\Service\BoardService;
-use OCA\Deck\Service\LabelService;
-use OCP\IDBConnection;
-use OCP\IL10N;
-use OCP\IUserManager;
+use OCA\Deck\Service\TrelloImportService;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class TrelloHelperTest extends \Test\TestCase {
-	/** @var BoardService */
-	private $boardService;
-	/** @var LabelService */
-	private $labelService;
-	/** @var StackMapper */
-	private $stackMapper;
-	/** @var CardMapper */
-	private $cardMapper;
-	/** @var IDBConnection */
-	private $connection;
-	/** @var IUserManager */
-	private $userManager;
+	/** @var TrelloImportService */
+	private $trelloImportService;
 	/** @var TrelloHelper */
 	private $trelloHelper;
-	/** @var IL10N */
-	private $l10n;
 	public function setUp(): void {
 		parent::setUp();
-		$this->boardService = $this->createMock(BoardService::class);
-		$this->labelService = $this->createMock(LabelService::class);
-		$this->stackMapper = $this->createMock(StackMapper::class);
-		$this->cardMapper = $this->createMock(CardMapper::class);
-		$this->assignmentMapper = $this->createMock(AssignmentMapper::class);
-		$this->aclMapper = $this->createMock(AclMapper::class);
-		$this->connection = $this->createMock(IDBConnection::class);
-		$this->userManager = $this->createMock(IUserManager::class);
-		$this->l10n = $this->createMock(IL10N::class);
+		$this->trelloImportService = $this->createMock(TrelloImportService::class);
 		$this->trelloHelper = new TrelloHelper(
-			$this->boardService,
-			$this->labelService,
-			$this->stackMapper,
-			$this->cardMapper,
-			$this->assignmentMapper,
-			$this->aclMapper,
-			$this->connection,
-			$this->userManager,
-			$this->l10n
+			$this->trelloImportService
 		);
 		$questionHelper = new QuestionHelper();
 		$command = new BoardImport($this->trelloHelper);
@@ -93,50 +57,16 @@ class TrelloHelperTest extends \Test\TestCase {
 		$input->method('getOption')
 			->withConsecutive(
 				[$this->equalTo('system')],
-				[$this->equalTo('config')],
-				[$this->equalTo('data')]
+				[$this->equalTo('config')]
 			)
 			->will($this->returnValueMap([
 				['system', 'trello'],
-				['config', __DIR__ . '/../fixtures/config-trello.json'],
-				['data', __DIR__ . '/../fixtures/data-trello.json']
+				['config', __DIR__ . '/../fixtures/config-trello.json']
 			]));
 		$output = $this->createMock(OutputInterface::class);
 
-		$user = $this->createMock(\OCP\IUser::class);
-		$user
-			->method('getUID')
-			->willReturn('admin');
-		$this->userManager
-			->method('get')
-			->willReturn($user);
-		$this->userManager
-			->method('get')
-			->willReturn($user);
-		$board = $this->createMock(\OCA\Deck\Db\Board::class);
-		$this->boardService
-			->expects($this->once())
-			->method('create')
-			->willReturn($board);
-		$label = $this->createMock(\OCA\Deck\Db\Label::class);
-		$this->labelService
-			->expects($this->once())
-			->method('create')
-			->willReturn($label);
-		$stack = $this->createMock(\OCA\Deck\Db\Stack::class);
-		$this->stackMapper
-			->expects($this->once())
-			->method('insert')
-			->willReturn($stack);
-		$card = $this->createMock(\OCA\Deck\Db\Card::class);
-		$this->cardMapper
-			->expects($this->once())
-			->method('insert')
-			->willReturn($card);
-
 		$this->invokePrivate($this->trelloHelper->getCommand(), 'validateSystem', [$input, $output]);
 		$this->invokePrivate($this->trelloHelper->getCommand(), 'validateConfig', [$input, $output]);
-		$this->trelloHelper->validate($input, $output);
 		$actual = $this->trelloHelper->import($input, $output);
 		$this->assertNull($actual);
 	}

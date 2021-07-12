@@ -25,7 +25,7 @@ namespace OCA\Deck\Command;
 
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
-use OCA\Deck\Command\ImportHelper\ImportAbstract;
+use OCA\Deck\Command\ImportHelper\AImport;
 use OCA\Deck\Command\ImportHelper\TrelloHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -116,11 +116,11 @@ class BoardImport extends Command {
 			$input->setOption('config', $configFile);
 		}
 
-		$this->getSystemHelper()->config = json_decode(file_get_contents($configFile));
+		$config = json_decode(file_get_contents($configFile));
 		$schemaPath = __DIR__ . '/ImportHelper/fixtures/config-' . $this->getSystem() . '-schema.json';
 		$validator = new Validator();
 		$validator->validate(
-			$this->getSystemHelper()->config,
+			$config,
 			(object)['$ref' => 'file://' . realpath($schemaPath)],
 			Constraint::CHECK_MODE_APPLY_DEFAULTS
 		);
@@ -134,6 +134,7 @@ class BoardImport extends Command {
 			$input->setOption('config', null);
 			$this->validateConfig($input, $output);
 		}
+		$this->getSystemHelper()->setConfigInstance($config);
 	}
 
 	private function setSystem(string $system): void {
@@ -145,7 +146,7 @@ class BoardImport extends Command {
 	}
 
 	/**
-	 * @return ImportAbstract
+	 * @return AImport
 	 */
 	private function getSystemHelper() {
 		$helper = $this->{$this->system . 'Helper'};
