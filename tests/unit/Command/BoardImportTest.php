@@ -23,7 +23,7 @@
 
 namespace OCA\Deck\Command;
 
-use OCA\Deck\Command\Helper\TrelloHelper;
+use OCA\Deck\Command\ImportHelper\TrelloHelper;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;

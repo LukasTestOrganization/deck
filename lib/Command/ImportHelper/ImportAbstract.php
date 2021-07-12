@@ -1,6 +1,6 @@
 <?php
 
-namespace OCA\Deck\Command\Helper;
+namespace OCA\Deck\Command\ImportHelper;
 
 use Symfony\Component\Console\Command\Command;
 

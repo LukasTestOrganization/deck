@@ -25,8 +25,8 @@ namespace OCA\Deck\Command;
 
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
-use OCA\Deck\Command\Helper\ImportInterface;
-use OCA\Deck\Command\Helper\TrelloHelper;
+use OCA\Deck\Command\ImportHelper\ImportInterface;
+use OCA\Deck\Command\ImportHelper\TrelloHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -58,7 +58,7 @@ class BoardImport extends Command {
 	 * @return void
 	 */
 	protected function configure() {
-		$allowedSystems = glob(__DIR__ . '/Helper/*Helper.php');
+		$allowedSystems = glob(__DIR__ . '/ImportHelper/*Helper.php');
 		$this->allowedSystems = array_map(function ($name) {
 			preg_match('/\/(?<system>\w+)Helper\.php$/', $name, $matches);
 			return lcfirst($matches['system']);

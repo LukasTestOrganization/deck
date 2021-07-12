@@ -21,7 +21,7 @@
  *
  */
 
-namespace OCA\Deck\Command\Helper;
+namespace OCA\Deck\Command\ImportHelper;
 
 use OCA\Deck\Command\BoardImport;
 use Symfony\Component\Console\Command\Command;

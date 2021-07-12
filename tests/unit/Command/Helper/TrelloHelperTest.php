@@ -23,7 +23,7 @@
 
 namespace OCA\Deck\Command;
 
-use OCA\Deck\Command\Helper\TrelloHelper;
+use OCA\Deck\Command\ImportHelper\TrelloHelper;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\CardMapper;

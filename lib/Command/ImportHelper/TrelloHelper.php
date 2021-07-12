@@ -21,7 +21,7 @@
  *
  */
 
-namespace OCA\Deck\Command\Helper;
+namespace OCA\Deck\Command\ImportHelper;
 
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
