@@ -145,7 +145,7 @@ class BoardImport extends Command {
 	}
 
 	/**
-	 * @return ImportInterface
+	 * @return ImportAbstract
 	 */
 	private function getSystemHelper() {
 		$helper = $this->{$this->system . 'Helper'};
