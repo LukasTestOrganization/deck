@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "properties": {
+        "uidRelation": {
+            "type": "object",
+            "comment": "Relationship between Trello and Nextcloud usernames",
+            "example": {
+                "johndoe": "admin"
+            }
+        },
+        "owner": {
+            "type": "string",
+            "required": true,
+            "comment": "Nextcloud owner username"
+        },
+        "color": {
+            "type": "string",
+            "required": true,
+            "pattern": "^[0-9a-fA-F]{6}$",
+            "comment": "Default color for the board. If you don't inform, the default color will be used.",
+            "default": "0800fd"
+        }
+    }
+}

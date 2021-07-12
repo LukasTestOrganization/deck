@@ -111,7 +111,6 @@ class TrelloHelper extends ImportAbstract implements ImportInterface {
 
 	public function validate(InputInterface $input, OutputInterface $output): void {
 		$this->validateData($input, $output);
-		$this->validateSettings($input, $output);
 		$this->validateUsers();
 		$this->validateOwner();
 	}

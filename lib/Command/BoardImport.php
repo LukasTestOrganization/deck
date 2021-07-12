@@ -23,6 +23,8 @@
 
 namespace OCA\Deck\Command;
 
+use JsonSchema\Constraints\Constraint;
+use JsonSchema\Validator;
 use OCA\Deck\Command\Helper\ImportInterface;
 use OCA\Deck\Command\Helper\TrelloHelper;
 use Symfony\Component\Console\Command\Command;
@@ -30,6 +32,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\Question;
 
 class BoardImport extends Command {
 	/** @var string */
@@ -94,18 +97,63 @@ class BoardImport extends Command {
 	 */
 	protected function interact(InputInterface $input, OutputInterface $output) {
 		$this->validateSystem($input, $output);
-		$this->getSystem()
+		$this->validateSettings($input, $output);
+		$this->getSystemHelper()
 			->validate($input, $output);
+	}
+
+	protected function validateSettings(InputInterface $input, OutputInterface $output): void {
+		$settingFile = $input->getOption('setting');
+		if (!is_file($settingFile)) {
+			$helper = $this->getHelper('question');
+			$question = new Question(
+				'Please inform a valid setting json file: ',
+				'config.json'
+			);
+			$question->setValidator(function ($answer) {
+				if (!is_file($answer)) {
+					throw new \RuntimeException(
+						'Setting file not found'
+					);
+				}
+				return $answer;
+			});
+			$settingFile = $helper->ask($input, $output, $question);
+			$input->setOption('setting', $settingFile);
+		}
+
+		$this->settings = json_decode(file_get_contents($settingFile));
+		$schemaPath = __DIR__ . '/fixtures/setting-' . $this->getSystem() . '-schema.json';
+		$validator = new Validator();
+		$validator->validate(
+			$this->settings,
+			(object)['$ref' => 'file://' . realpath($schemaPath)],
+			Constraint::CHECK_MODE_APPLY_DEFAULTS
+		);
+		if (!$validator->isValid()) {
+			$output->writeln('<error>Invalid setting file</error>');
+			$output->writeln(array_map(function ($v) {
+				return $v['message'];
+			}, $validator->getErrors()));
+			$output->writeln('Valid schema:');
+			$output->writeln(print_r(file_get_contents($schemaPath), true));
+			$input->setOption('setting', null);
+			$this->validateSettings($input, $output);
+		}
 	}
 
 	private function setSystem(string $system): void {
 		$this->system = $system;
 	}
 
+	public function getSystem() {
+		return $this->system;
+	}
+
 	/**
 	 * @return ImportInterface
 	 */
-	private function getSystem() {
+	private function getSystemHelper() {
 		$helper = $this->{$this->system . 'Helper'};
 		$helper->setCommand($this);
 		return $helper;
@@ -139,7 +187,7 @@ class BoardImport extends Command {
 	 * @return int
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int {
-		$this->getSystem()
+		$this->getSystemHelper()
 			->import($input, $output);
 		$output->writeln('Done!');
 		return 0;
