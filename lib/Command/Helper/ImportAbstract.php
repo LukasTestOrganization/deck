@@ -9,35 +9,31 @@ class ImportAbstract {
 	/** @var Command */
 	private $command;
 
+	/**
+	 * @inheritDoc
+	 */
 	public function setCommand(Command $command): void {
 		$this->command = $command;
 	}
 
 	/**
-	 * @return BoardImport
+	 * @inheritDoc
 	 */
 	public function getCommand() {
 		return $this->command;
 	}
 
 	/**
-	 * Get a setting
-	 *
-	 * @param string $setting Setting name
-	 * @return mixed
+	 * @inheritDoc
 	 */
-	public function getSetting($setting) {
-		return $this->getCommand()->settings->$setting;
+	public function setSetting($settingName, $value): void {
+		$this->getCommand()->settings->$settingName = $value;
 	}
 
 	/**
-	 * Define a setting
-	 *
-	 * @param string $settingName
-	 * @param mixed $value
-	 * @return void
+	 * @inheritDoc
 	 */
-	public function setSetting($settingName, $value) {
-		$this->getCommand()->settings->$settingName = $value;
+	public function getSetting($setting) {
+		return $this->getCommand()->settings->$setting;
 	}
 }

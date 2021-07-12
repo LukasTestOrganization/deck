@@ -23,6 +23,7 @@
 
 namespace OCA\Deck\Command\Helper;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -44,4 +45,34 @@ interface ImportInterface {
 	 * @return void
 	 */
 	public function import(InputInterface $input, OutputInterface $output): void;
+
+	/**
+	 * Define Command instance
+	 *
+	 * @param Command $command
+	 * @return void
+	 */
+	public function setCommand(Command $command): void;
+
+	/**
+	 * @return BoardImport
+	 */
+	public function getCommand();
+
+	/**
+	 * Define a setting
+	 *
+	 * @param string $settingName
+	 * @param mixed $value
+	 * @return void
+	 */
+	public function setSetting($settingName, $value): void;
+
+	/**
+	 * Get a setting
+	 *
+	 * @param string $setting Setting name
+	 * @return mixed
+	 */
+	public function getSetting($setting);
 }
