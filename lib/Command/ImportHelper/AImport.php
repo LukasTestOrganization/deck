@@ -29,6 +29,8 @@ abstract class AImport extends AImportService {
 
 	abstract public function validate(InputInterface $input, OutputInterface $output): void;
 
+	abstract public function import(InputInterface $input, OutputInterface $output): void;
+
 	/**
 	 * Define Command instance
 	 *

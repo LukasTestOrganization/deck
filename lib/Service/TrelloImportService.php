@@ -27,6 +27,7 @@ use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
+use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\Label;
@@ -56,6 +57,8 @@ class TrelloImportService extends AImportService {
 	private $userManager;
 	/** @var IL10N */
 	private $l10n;
+	/** @var Board */
+	private $board;
 	/**
 	 * Array of stacks
 	 *
