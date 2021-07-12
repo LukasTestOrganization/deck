@@ -29,10 +29,12 @@ use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
+use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCP\IDBConnection;
 use OCP\IL10N;
+use OCP\IUser;
 use OCP\IUserManager;
 
 class TrelloImportService extends AImportService {
