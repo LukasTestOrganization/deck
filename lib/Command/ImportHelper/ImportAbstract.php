@@ -7,6 +7,12 @@ use Symfony\Component\Console\Command\Command;
 class ImportAbstract {
 	/** @var Command */
 	private $command;
+	/**
+	 * Data object created from config JSON
+	 *
+	 * @var \StdClass
+	 */
+	public $config;
 
 	/**
 	 * @inheritDoc
@@ -25,20 +31,20 @@ class ImportAbstract {
 	/**
 	 * @inheritDoc
 	 */
-	public function setSetting($settingName, $value): void {
-		$this->getCommand()->settings->$settingName = $value;
+	public function setConfig($property, $value): void {
+		$this->config->$property = $value;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function getSetting($setting) {
-		if (!is_object($this->getCommand()->settings)) {
+	public function getConfig($property) {
+		if (!is_object($this->config)) {
 			return;
 		}
-		if (!property_exists($this->getCommand()->settings, $setting)) {
+		if (!property_exists($this->config, $property)) {
 			return;
 		}
-		return $this->getCommand()->settings->$setting;
+		return $this->config->$property;
 	}
 }

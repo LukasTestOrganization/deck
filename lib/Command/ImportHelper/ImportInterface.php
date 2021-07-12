@@ -61,19 +61,19 @@ interface ImportInterface {
 	public function getCommand();
 
 	/**
-	 * Define a setting
+	 * Define a config
 	 *
-	 * @param string $settingName
+	 * @param string $configName
 	 * @param mixed $value
 	 * @return void
 	 */
-	public function setSetting($settingName, $value): void;
+	public function setConfig($configName, $value): void;
 
 	/**
-	 * Get a setting
+	 * Get a config
 	 *
-	 * @param string $setting Setting name
+	 * @param string $config config name
 	 * @return mixed
 	 */
-	public function getSetting($setting);
+	public function getConfig($config);
 }

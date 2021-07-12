@@ -40,12 +40,6 @@ class BoardImport extends Command {
 	private $allowedSystems;
 	/** @var TrelloHelper */
 	private $trelloHelper;
-	/**
-	 * Data object created from settings JSON
-	 *
-	 * @var \StdClass
-	 */
-	public $settings;
 
 	public function __construct(
 		TrelloHelper $trelloHelper
@@ -74,7 +68,7 @@ class BoardImport extends Command {
 				'trello'
 			)
 			->addOption(
-				'setting',
+				'config',
 				null,
 				InputOption::VALUE_REQUIRED,
 				'Configuration json file.',
@@ -97,48 +91,48 @@ class BoardImport extends Command {
 	 */
 	protected function interact(InputInterface $input, OutputInterface $output) {
 		$this->validateSystem($input, $output);
-		$this->validateSettings($input, $output);
+		$this->validateConfig($input, $output);
 		$this->getSystemHelper()
 			->validate($input, $output);
 	}
 
-	protected function validateSettings(InputInterface $input, OutputInterface $output): void {
-		$settingFile = $input->getOption('setting');
-		if (!is_file($settingFile)) {
+	protected function validateConfig(InputInterface $input, OutputInterface $output): void {
+		$configFile = $input->getOption('config');
+		if (!is_file($configFile)) {
 			$helper = $this->getHelper('question');
 			$question = new Question(
-				'Please inform a valid setting json file: ',
+				'Please inform a valid config json file: ',
 				'config.json'
 			);
 			$question->setValidator(function ($answer) {
 				if (!is_file($answer)) {
 					throw new \RuntimeException(
-						'Setting file not found'
+						'config file not found'
 					);
 				}
 				return $answer;
 			});
-			$settingFile = $helper->ask($input, $output, $question);
-			$input->setOption('setting', $settingFile);
+			$configFile = $helper->ask($input, $output, $question);
+			$input->setOption('config', $configFile);
 		}
 
-		$this->settings = json_decode(file_get_contents($settingFile));
-		$schemaPath = __DIR__ . '/ImportHelper/fixtures/setting-' . $this->getSystem() . '-schema.json';
+		$this->getSystemHelper()->config = json_decode(file_get_contents($configFile));
+		$schemaPath = __DIR__ . '/ImportHelper/fixtures/config-' . $this->getSystem() . '-schema.json';
 		$validator = new Validator();
 		$validator->validate(
-			$this->settings,
+			$this->getSystemHelper()->config,
 			(object)['$ref' => 'file://' . realpath($schemaPath)],
 			Constraint::CHECK_MODE_APPLY_DEFAULTS
 		);
 		if (!$validator->isValid()) {
-			$output->writeln('<error>Invalid setting file</error>');
+			$output->writeln('<error>Invalid config file</error>');
 			$output->writeln(array_map(function ($v) {
 				return $v['message'];
 			}, $validator->getErrors()));
 			$output->writeln('Valid schema:');
 			$output->writeln(print_r(file_get_contents($schemaPath), true));
-			$input->setOption('setting', null);
-			$this->validateSettings($input, $output);
+			$input->setOption('config', null);
+			$this->validateConfig($input, $output);
 		}
 	}
 

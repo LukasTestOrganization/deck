@@ -93,12 +93,12 @@ class TrelloHelperTest extends \Test\TestCase {
 		$input->method('getOption')
 			->withConsecutive(
 				[$this->equalTo('system')],
-				[$this->equalTo('setting')],
+				[$this->equalTo('config')],
 				[$this->equalTo('data')]
 			)
 			->will($this->returnValueMap([
 				['system', 'trello'],
-				['setting', __DIR__ . '/../fixtures/setting-trello.json'],
+				['config', __DIR__ . '/../fixtures/config-trello.json'],
 				['data', __DIR__ . '/../fixtures/data-trello.json']
 			]));
 		$output = $this->createMock(OutputInterface::class);
@@ -135,7 +135,7 @@ class TrelloHelperTest extends \Test\TestCase {
 			->willReturn($card);
 
 		$this->invokePrivate($this->trelloHelper->getCommand(), 'validateSystem', [$input, $output]);
-		$this->invokePrivate($this->trelloHelper->getCommand(), 'validateSettings', [$input, $output]);
+		$this->invokePrivate($this->trelloHelper->getCommand(), 'validateConfig', [$input, $output]);
 		$this->trelloHelper->validate($input, $output);
 		$actual = $this->trelloHelper->import($input, $output);
 		$this->assertNull($actual);
