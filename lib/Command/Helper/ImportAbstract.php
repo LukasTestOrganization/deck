@@ -2,7 +2,6 @@
 
 namespace OCA\Deck\Command\Helper;
 
-use OCA\Deck\Command\BoardImport;
 use Symfony\Component\Console\Command\Command;
 
 class ImportAbstract {
