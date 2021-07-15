@@ -101,6 +101,7 @@
 					:lang="lang"
 					:formatter="format"
 					:disabled="saving || !canEdit"
+					:shortcuts="shortcuts"
 					confirm />
 				<Actions v-if="canEdit">
 					<ActionButton v-if="copiedCard.duedate" icon="icon-delete" @click="removeDue()">
@@ -176,6 +177,48 @@ export default {
 				stringify: this.stringify,
 				parse: this.parse,
 			},
+			shortcuts: [
+				{
+					text: t('deck', 'Today'),
+					onClick() {
+						const date = new Date()
+						date.setDate(date.getDate())
+						date.setHours(23)
+						date.setMinutes(59)
+						return date
+					},
+				},
+				{
+					text: t('deck', 'Tomorrow'),
+					onClick() {
+						const date = new Date()
+						date.setDate(date.getDate() + 1)
+						date.setHours(23)
+						date.setMinutes(59)
+						return date
+					},
+				},
+				{
+					text: t('deck', 'Next week'),
+					onClick() {
+						const date = new Date()
+						date.setDate(date.getDate() + 7)
+						date.setHours(23)
+						date.setMinutes(59)
+						return date
+					},
+				},
+				{
+					text: t('deck', 'Next month'),
+					onClick() {
+						const date = new Date()
+						date.setDate(date.getDate() + 30)
+						date.setHours(23)
+						date.setMinutes(59)
+						return date
+					},
+				},
+			],
 		}
 	},
 	computed: {
@@ -315,6 +358,14 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+
+.section-wrapper::v-deep .mx-datepicker-main.mx-datepicker-popup {
+	left: 0 !important;
+}
+
+.section-wrapper::v-deep .mx-datepicker-main.mx-datepicker-popup.mx-datepicker-sidebar {
+	padding: 0 !important;
+}
 
 .section-wrapper {
 	display: flex;
