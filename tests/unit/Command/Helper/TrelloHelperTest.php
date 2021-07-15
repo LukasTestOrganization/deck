@@ -24,6 +24,8 @@
 namespace OCA\Deck\Command;
 
 use OCA\Deck\Command\ImportHelper\TrelloHelper;
+use OCA\Deck\Service\AImportService;
+use OCA\Deck\Service\BoardImportService;
 use OCA\Deck\Service\TrelloImportService;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -33,6 +35,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class TrelloHelperTest extends \Test\TestCase {
 	/** @var TrelloImportService */
 	private $trelloImportService;
+	/** @var BoardImportService */
+	private $boardImportService;
 	/** @var TrelloHelper */
 	private $trelloHelper;
 	public function setUp(): void {
@@ -42,7 +46,14 @@ class TrelloHelperTest extends \Test\TestCase {
 			$this->trelloImportService
 		);
 		$questionHelper = new QuestionHelper();
-		$command = new BoardImport($this->trelloHelper);
+		$this->boardImportService = $this->createMock(BoardImportService::class);
+		$this->boardImportService
+			->method('getAllowedImportSystems')
+			->willReturn(['trello']);
+		$command = new BoardImport(
+			$this->trelloHelper,
+			$this->boardImportService
+		);
 		$command->setHelperSet(
 			new HelperSet([
 				$questionHelper
@@ -61,9 +72,17 @@ class TrelloHelperTest extends \Test\TestCase {
 			)
 			->will($this->returnValueMap([
 				['system', 'trello'],
-				['config', __DIR__ . '/../fixtures/config-trello.json']
+				['config', __DIR__ . '/../../../data/config-trello.json']
 			]));
 		$output = $this->createMock(OutputInterface::class);
+
+		$this->boardImportService
+			->method('getSystem')
+			->willReturn('trello');
+		$importService = $this->createMock(AImportService::class);
+		$this->boardImportService
+			->method('getImportService')
+			->willReturn($importService);
 
 		$this->invokePrivate($this->trelloHelper->getCommand(), 'validateSystem', [$input, $output]);
 		$this->invokePrivate($this->trelloHelper->getCommand(), 'validateConfig', [$input, $output]);

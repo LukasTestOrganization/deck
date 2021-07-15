@@ -24,6 +24,9 @@
 namespace OCA\Deck\Command;
 
 use OCA\Deck\Command\ImportHelper\TrelloHelper;
+use OCA\Deck\Service\AImportService;
+use OCA\Deck\Service\BoardImportService;
+use OCA\Deck\Service\BoardService;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,14 +35,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 class BoardImportTest extends \Test\TestCase {
 	/** @var TrelloHelper */
 	private $trelloHelper;
+	/** @var BoardImportService */
+	private $boardImportService;
 	/** @var BoardImport */
 	private $boardImport;
 
 	public function setUp(): void {
 		parent::setUp();
 		$this->trelloHelper = $this->createMock(TrelloHelper::class);
+		$this->boardImportService = $this->createMock(BoardImportService::class);
+		$this->boardImportService
+			->method('getAllowedImportSystems')
+			->willReturn(['trello']);
 		$this->boardImport = new BoardImport(
-			$this->trelloHelper
+			$this->trelloHelper,
+			$this->boardImportService
 		);
 		$questionHelper = new QuestionHelper();
 		$this->boardImport->setHelperSet(
@@ -60,8 +70,8 @@ class BoardImportTest extends \Test\TestCase {
 			)
 			->will($this->returnValueMap([
 				['system', 'trello'],
-				['config', __DIR__ . '/fixtures/config-trello.json'],
-				['data', __DIR__ . '/fixtures/data-trello.json']
+				['config', __DIR__ . '/../../data/config-trello.json'],
+				['data', __DIR__ . '/../../data/data-trello.json']
 			]));
 		$output = $this->createMock(OutputInterface::class);
 
@@ -69,6 +79,13 @@ class BoardImportTest extends \Test\TestCase {
 			->expects($this->once())
 			->method('writeLn')
 			->with('Done!');
+		$this->boardImportService
+			->method('getSystem')
+			->willReturn('trello');
+		$importService = $this->createMock(AImportService::class);
+		$this->boardImportService
+			->method('getImportService')
+			->willReturn($importService);
 
 		$this->invokePrivate($this->boardImport, 'interact', [$input, $output]);
 		$actual = $this->invokePrivate($this->boardImport, 'execute', [$input, $output]);

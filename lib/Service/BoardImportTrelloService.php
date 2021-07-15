@@ -23,6 +23,7 @@
 
 namespace OCA\Deck\Service;
 
+use OC\Comments\Comment;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
 use OCA\Deck\Db\Assignment;
@@ -38,9 +39,7 @@ use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
 
-class TrelloImportService extends AImportService {
-	/** @var BoardService */
-	private $boardService;
+class BoardImportTrelloService extends ABoardImportService {
 	/** @var LabelService */
 	private $labelService;
 	/** @var StackMapper */
@@ -57,8 +56,6 @@ class TrelloImportService extends AImportService {
 	private $userManager;
 	/** @var IL10N */
 	private $l10n;
-	/** @var Board */
-	private $board;
 	/**
 	 * Array of stacks
 	 *
@@ -75,12 +72,6 @@ class TrelloImportService extends AImportService {
 	private $cards = [];
 	/** @var IUser[] */
 	private $members = [];
-	/**
-	 * Data object created from JSON of origin system
-	 *
-	 * @var \StdClass
-	 */
-	private $data;
 
 	public function __construct(
 		BoardService $boardService,
@@ -104,31 +95,21 @@ class TrelloImportService extends AImportService {
 		$this->l10n = $l10n;
 	}
 
-	public function setData(\stdClass $data) {
-		$this->data = $data;
-	}
-
-	public function getData() {
-		return $this->data;
-	}
-
-	public function validateOwner(): void {
-		$owner = $this->userManager->get($this->getConfig('owner'));
-		if (!$owner) {
-			throw new \LogicException('Owner "' . $this->getConfig('owner')->getUID() . '" not found on Nextcloud. Check setting json.');
-		}
-		$this->setConfig('owner', $owner);
+	public function validate(): ABoardImportService {
+		$this->boardImportTrelloService->validateOwner();
+		$this->boardImportTrelloService->validateUsers();
+		return $this;
 	}
 
 	/**
-	 * @return void
+	 * @return ABoardImportService
 	 */
-	public function validateUsers() {
-		if (empty($this->getConfig('uidRelation'))) {
-			return;
+	public function validateUsers(): self {
+		if (empty($this->getImportService()->getConfig('uidRelation'))) {
+			return $this;
 		}
-		foreach ($this->getConfig('uidRelation') as $trelloUid => $nextcloudUid) {
-			$user = array_filter($this->data->members, function ($u) use ($trelloUid) {
+		foreach ($this->getImportService()->getConfig('uidRelation') as $trelloUid => $nextcloudUid) {
+			$user = array_filter($this->getImportService()->getData()->members, function ($u) use ($trelloUid) {
 				return $u->username === $trelloUid;
 			});
 			if (!$user) {
@@ -137,29 +118,35 @@ class TrelloImportService extends AImportService {
 			if (!is_string($nextcloudUid)) {
 				throw new \LogicException('User on setting uidRelation must be a string');
 			}
-			$this->getConfig('uidRelation')->$trelloUid = $this->userManager->get($nextcloudUid);
-			if (!$this->getConfig('uidRelation')->$trelloUid) {
+			$this->getImportService()->getConfig('uidRelation')->$trelloUid = $this->userManager->get($nextcloudUid);
+			if (!$this->getImportService()->getConfig('uidRelation')->$trelloUid) {
 				throw new \LogicException('User on setting uidRelation not found: ' . $nextcloudUid);
 			}
 			$user = current($user);
-			$this->members[$user->id] = $this->getConfig('uidRelation')->$trelloUid;
+			$this->members[$user->id] = $this->getImportService()->getConfig('uidRelation')->$trelloUid;
 		}
+		return $this;
 	}
 
-	public function assignUsersToBoard(): void {
+	/**
+	 * @return Acl[]
+	 */
+	public function getAclList(): array {
+		$return = [];
 		foreach ($this->members as $member) {
-			if ($member->getUID() === $this->getConfig('owner')->getUID()) {
+			if ($member->getUID() === $this->getImportService()->getConfig('owner')->getUID()) {
 				continue;
 			}
 			$acl = new Acl();
-			$acl->setBoardId($this->board->getId());
+			$acl->setBoardId($this->getImportService()->getBoard()->getId());
 			$acl->setType(Acl::PERMISSION_TYPE_USER);
 			$acl->setParticipant($member->getUID());
 			$acl->setPermissionEdit(false);
 			$acl->setPermissionShare(false);
 			$acl->setPermissionManage(false);
-			$this->aclMapper->insert($acl);
+			$return[] = $acl;
 		}
+		return $return;
 	}
 
 	private function checklistItem($item): string {
@@ -181,14 +168,17 @@ class TrelloImportService extends AImportService {
 		return $checklist_string;
 	}
 
-	public function importCards(): void {
+	/**
+	 * @return Card[]
+	 */
+	public function getCards(): array {
 		$checklists = [];
-		foreach ($this->data->checklists as $checklist) {
+		foreach ($this->getImportService()->getData()->checklists as $checklist) {
 			$checklists[$checklist->idCard][$checklist->id] = $this->formulateChecklistText($checklist);
 		}
-		$this->data->checklists = $checklists;
+		$this->getImportService()->getData()->checklists = $checklists;
 
-		foreach ($this->data->cards as $trelloCard) {
+		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			$card = new Card();
 			$lastModified = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->dateLastActivity);
 			$card->setLastModified($lastModified->format('Y-m-d H:i:s'));
@@ -196,7 +186,7 @@ class TrelloImportService extends AImportService {
 				$card->setDeletedAt($lastModified->format('U'));
 			}
 			if ((count($trelloCard->idChecklists) !== 0)) {
-				foreach ($this->data->checklists[$trelloCard->id] as $checklist) {
+				foreach ($this->getImportService()->getData()->checklists[$trelloCard->id] as $checklist) {
 					$trelloCard->desc .= "\n" . $checklist;
 				}
 			}
@@ -206,24 +196,27 @@ class TrelloImportService extends AImportService {
 			$card->setStackId($this->stacks[$trelloCard->idList]->getId());
 			$card->setType('plain');
 			$card->setOrder($trelloCard->idShort);
-			$card->setOwner($this->getConfig('owner')->getUID());
+			$card->setOwner($this->getImportService()->getConfig('owner')->getUID());
 			$card->setDescription($trelloCard->desc);
 			if ($trelloCard->due) {
 				$duedate = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->due)
 					->format('Y-m-d H:i:s');
 				$card->setDuedate($duedate);
 			}
-			$card = $this->cardMapper->insert($card);
 			$this->cards[$trelloCard->id] = $card;
-
-			$this->associateCardToLabels($card, $trelloCard);
-			$this->importComments($card, $trelloCard);
-			$this->assignToMember($card, $trelloCard);
+			$this->cardsTrello[$trelloCard->id] = $trelloCard;
+			// $this->assignToMember($trelloCard);
 		}
+		return $this->cards;
+	}
+
+	public function updateCard($cardTrelloId, Card $card): self {
+		$this->cards[$cardTrelloId] = $card;
+		return $this;
 	}
 
 	/**
-	 * @return void
+	 * @return ABoardImportService
 	 */
 	private function appendAttachmentsToDescription($trelloCard) {
 		if (empty($trelloCard->attachments)) {
@@ -236,9 +229,10 @@ class TrelloImportService extends AImportService {
 			$name = $attachment->name === $attachment->url ? null : $attachment->name;
 			$trelloCard->desc .= "| {$attachment->url} | {$name} | {$attachment->date} |\n";
 		}
+		return $this;
 	}
 
-	private function assignToMember(Card $card, $trelloCard): void {
+	private function assignToMember(Card $card, $trelloCard): ABoardImportService {
 		foreach ($trelloCard->idMembers as $idMember) {
 			$assignment = new Assignment();
 			$assignment->setCardId($card->getId());
@@ -246,76 +240,79 @@ class TrelloImportService extends AImportService {
 			$assignment->setType(Assignment::TYPE_USER);
 			$assignment = $this->assignmentMapper->insert($assignment);
 		}
+		return $this;
 	}
 
-	private function importComments(\OCP\AppFramework\Db\Entity $card, $trelloCard): void {
-		$comments = array_filter(
-			$this->data->actions,
-			function ($a) use ($trelloCard) {
-				return $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id;
+	public function importComments(): ABoardImportService {
+		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
+			$comments = array_filter(
+				$this->getImportService()->getData()->actions,
+				function ($a) use ($trelloCard) {
+					return $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id;
+				}
+			);
+			foreach ($comments as $trelloComment) {
+				if (!empty($this->getImportService()->getConfig('uidRelation')->{$trelloComment->memberCreator->username})) {
+					$actor = $this->getImportService()->getConfig('uidRelation')->{$trelloComment->memberCreator->username}->getUID();
+				} else {
+					$actor = $this->getImportService()->getConfig('owner')->getUID();
+				}
+				$comment = new Comment();
+				$comment
+					->setActor('users', $actor)
+					->setMessage($this->replaceUsernames($trelloComment->data->text), 0)
+					->setCreationDateTime(
+						\DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloComment->date)
+					);
+				$this->getImportService()->insertComment(
+					$this->cards[$trelloCard->id]->getId(),
+					$comment
+				);
 			}
-		);
-		foreach ($comments as $trelloComment) {
-			if (!empty($this->getConfig('uidRelation')->{$trelloComment->memberCreator->username})) {
-				$actor = $this->getConfig('uidRelation')->{$trelloComment->memberCreator->username}->getUID();
-			} else {
-				$actor = $this->getConfig('owner')->getUID();
-			}
-			$message = $this->replaceUsernames($trelloComment->data->text);
-			$qb = $this->connection->getQueryBuilder();
-
-			$values = [
-				'parent_id' => $qb->createNamedParameter(0),
-				'topmost_parent_id' => $qb->createNamedParameter(0),
-				'children_count' => $qb->createNamedParameter(0),
-				'actor_type' => $qb->createNamedParameter('users'),
-				'actor_id' => $qb->createNamedParameter($actor),
-				'message' => $qb->createNamedParameter($message),
-				'verb' => $qb->createNamedParameter('comment'),
-				'creation_timestamp' => $qb->createNamedParameter(
-					\DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloComment->date)
-					->format('Y-m-d H:i:s')
-				),
-				'latest_child_timestamp' => $qb->createNamedParameter(null),
-				'object_type' => $qb->createNamedParameter('deckCard'),
-				'object_id' => $qb->createNamedParameter($card->getId()),
-			];
-
-			$qb->insert('comments')
-				->values($values)
-				->execute();
 		}
+		return $this;
 	}
 
 	private function replaceUsernames($text) {
-		foreach ($this->getConfig('uidRelation') as $trello => $nextcloud) {
+		foreach ($this->getImportService()->getConfig('uidRelation') as $trello => $nextcloud) {
 			$text = str_replace($trello, $nextcloud->getUID(), $text);
 		}
 		return $text;
 	}
 
-	private function associateCardToLabels(\OCP\AppFramework\Db\Entity $card, $trelloCard): void {
-		foreach ($trelloCard->labels as $label) {
-			$this->cardMapper->assignLabel(
-				$card->getId(),
-				$this->labels[$label->id]->getId()
-			);
+	public function assignCardsToLabels(): self {
+		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
+			foreach ($trelloCard->labels as $label) {
+				$this->getImportService()->assignCardToLabel(
+					$this->cards[$trelloCard->id]->getId(),
+					$this->labels[$label->id]->getId()
+				);
+			}
 		}
+		return $this;
 	}
 
-	public function importStacks(): void {
-		$this->stacks = [];
-		foreach ($this->data->lists as $order => $list) {
+	/**
+	 * @return Stack[]
+	 */
+	public function getStacks(): array {
+		$return = [];
+		foreach ($this->getImportService()->getData()->lists as $order => $list) {
 			$stack = new Stack();
 			if ($list->closed) {
 				$stack->setDeletedAt(time());
 			}
 			$stack->setTitle($list->name);
-			$stack->setBoardId($this->board->getId());
+			$stack->setBoardId($this->getImportService()->getBoard()->getId());
 			$stack->setOrder($order + 1);
-			$stack = $this->stackMapper->insert($stack);
-			$this->stacks[$list->id] = $stack;
+			$return[$list->id] = $stack;
 		}
+		return $return;
+	}
+
+	public function updateStack($id, $stack): self {
+		$this->stacks[$id] = $stack;
+		return $this;
 	}
 
 	private function translateColor($color): string {
@@ -345,45 +342,28 @@ class TrelloImportService extends AImportService {
 		}
 	}
 
-	public function importBoard(): void {
-		$this->board = $this->boardService->create(
-			$this->data->name,
-			$this->getConfig('owner')->getUID(),
-			$this->getConfig('color')
-		);
+	public function getBoard(): Board {
+		$board = new Board();
+		$board->setTitle($this->getImportService()->getData()->name);
+		$board->setOwner($this->getImportService()->getConfig('owner')->getUID());
+		$board->setColor($this->getImportService()->getConfig('color'));
+		return $board;
 	}
 
-	public function importLabels(): void {
-		$this->labels = [];
-		foreach ($this->data->labels as $label) {
+	public function importLabels(): self {
+		foreach ($this->getImportService()->getData()->labels as $label) {
 			if (empty($label->name)) {
 				$labelTitle = 'Unnamed ' . $label->color . ' label';
 			} else {
 				$labelTitle = $label->name;
 			}
-			$newLabel = $this->labelService->create(
+			$newLabel = $this->getImportService()->createLabel(
 				$labelTitle,
 				$this->translateColor($label->color),
-				$this->board->getId()
+				$this->getImportService()->getBoard()->getId()
 			);
 			$this->labels[$label->id] = $newLabel;
 		}
-	}
-
-	public function setUserId(): void {
-		if (!property_exists($this->labelService, 'permissionService')) {
-			return;
-		}
-		$propertyPermissionService = new \ReflectionProperty($this->labelService, 'permissionService');
-		$propertyPermissionService->setAccessible(true);
-		$permissionService = $propertyPermissionService->getValue($this->labelService);
-
-		if (!property_exists($permissionService, 'userId')) {
-			return;
-		}
-
-		$propertyUserId = new \ReflectionProperty($permissionService, 'userId');
-		$propertyUserId->setAccessible(true);
-		$propertyUserId->setValue($permissionService, $this->getConfig('owner')->getUID());
+		return $this;
 	}
 }

@@ -73,6 +73,8 @@ class BoardServiceTest extends TestCase {
 	private $changeHelper;
 	/** @var IEventDispatcher */
 	private $eventDispatcher;
+	/** @var TrelloImportService */
+	private $trelloImportService;
 	private $userId = 'admin';
 
 	public function setUp(): void {
@@ -91,6 +93,7 @@ class BoardServiceTest extends TestCase {
 		$this->activityManager = $this->createMock(ActivityManager::class);
 		$this->changeHelper = $this->createMock(ChangeHelper::class);
 		$this->eventDispatcher = $this->createMock(IEventDispatcher::class);
+		$this->trelloImportService = $this->createMock(TrelloImportService::class);
 
 		$this->service = new BoardService(
 			$this->boardMapper,
@@ -107,6 +110,7 @@ class BoardServiceTest extends TestCase {
 			$this->activityManager,
 			$this->eventDispatcher,
 			$this->changeHelper,
+			$this->trelloImportService,
 			$this->userId
 		);
 
