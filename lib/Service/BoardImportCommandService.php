@@ -5,7 +5,6 @@ namespace OCA\Deck\Service;
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
 use OCA\Deck\Command\BoardImport;
-use OCA\Deck\Service\BoardImportService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

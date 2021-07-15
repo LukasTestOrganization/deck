@@ -152,9 +152,9 @@ class BoardImportService {
 	public function getAllowedImportSystems(): array {
 		if (!$this->allowedSystems) {
 			$allowedSystems = glob(__DIR__ . '/BoardImport*Service.php');
-			$allowedSystems = array_filter($allowedSystems, function($name) {
+			$allowedSystems = array_filter($allowedSystems, function ($name) {
 				$name = basename($name);
-				switch($name) {
+				switch ($name) {
 					case 'ABoardImportService.php':
 					case 'BoardImportService.php':
 					case 'BoardImportCommandService.php':
