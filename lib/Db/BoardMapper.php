@@ -75,7 +75,7 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 	 * @throws DoesNotExistException
 	 */
 	public function find($id, $withLabels = false, $withAcl = false) {
-		$sql = 'SELECT id, title, owner, color, archived, deleted_at, last_modified FROM `*PREFIX*deck_boards` ' .
+		$sql = 'SELECT id, title, owner, color, archived, deleted_at, last_modified, cover_images FROM `*PREFIX*deck_boards` ' .
 			'WHERE `id` = ?';
 		$board = $this->findEntity($sql, [$id]);
 
@@ -122,12 +122,12 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 	 */
 	public function findAllByUser($userId, $limit = null, $offset = null, $since = -1, $includeArchived = true) {
 		// FIXME: One moving to QBMapper we should allow filtering the boards probably by method chaining for additional where clauses
-		$sql = 'SELECT id, title, owner, color, archived, deleted_at, 0 as shared, last_modified FROM `*PREFIX*deck_boards` WHERE owner = ? AND last_modified > ?';
+		$sql = 'SELECT id, title, owner, color, archived, deleted_at, 0 as shared, last_modified, cover_images FROM `*PREFIX*deck_boards` WHERE owner = ? AND last_modified > ?';
 		if (!$includeArchived) {
 			$sql .= ' AND NOT archived AND deleted_at = 0';
 		}
 		$sql .= ' UNION ' .
-			'SELECT boards.id, title, owner, color, archived, deleted_at, 1 as shared, last_modified FROM `*PREFIX*deck_boards` as boards ' .
+			'SELECT boards.id, title, owner, color, archived, deleted_at, 1 as shared, last_modified, cover_images FROM `*PREFIX*deck_boards` as boards ' .
 			'JOIN `*PREFIX*deck_board_acl` as acl ON boards.id=acl.board_id WHERE acl.participant=? AND acl.type=? AND boards.owner != ? AND last_modified > ?';
 		if (!$includeArchived) {
 			$sql .= ' AND NOT archived AND deleted_at = 0';
@@ -159,7 +159,7 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 		if (count($groups) <= 0) {
 			return [];
 		}
-		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified FROM `*PREFIX*deck_boards` as boards ' .
+		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified, cover_images FROM `*PREFIX*deck_boards` as boards ' .
 			'INNER JOIN `*PREFIX*deck_board_acl` as acl ON boards.id=acl.board_id WHERE owner != ? AND type=? AND (';
 		for ($i = 0, $iMax = count($groups); $i < $iMax; $i++) {
 			$sql .= 'acl.participant = ? ';
@@ -191,7 +191,7 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 			return [];
 		}
 
-		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified FROM `*PREFIX*deck_boards` as boards ' .
+		$sql = 'SELECT boards.id, title, owner, color, archived, deleted_at, 2 as shared, last_modified, cover_images FROM `*PREFIX*deck_boards` as boards ' .
 			'INNER JOIN `*PREFIX*deck_board_acl` as acl ON boards.id=acl.board_id WHERE owner != ? AND type=? AND (';
 		for ($i = 0, $iMax = count($circles); $i < $iMax; $i++) {
 			$sql .= 'acl.participant = ? ';
@@ -220,7 +220,7 @@ class BoardMapper extends DeckMapper implements IPermissionMapper {
 	public function findToDelete() {
 		// add buffer of 5 min
 		$timeLimit = time() - (60 * 5);
-		$sql = 'SELECT id, title, owner, color, archived, deleted_at, last_modified FROM `*PREFIX*deck_boards` ' .
+		$sql = 'SELECT id, title, owner, color, archived, deleted_at, last_modified, cover_images FROM `*PREFIX*deck_boards` ' .
 			'WHERE `deleted_at` > 0 AND `deleted_at` < ?';
 		return $this->findEntities($sql, [$timeLimit]);
 	}

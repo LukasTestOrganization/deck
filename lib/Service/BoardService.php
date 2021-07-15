@@ -405,13 +405,14 @@ class BoardService {
 	 * @param $title
 	 * @param $color
 	 * @param $archived
+	 * @param $coverImages
 	 * @return \OCP\AppFramework\Db\Entity
 	 * @throws DoesNotExistException
 	 * @throws \OCA\Deck\NoPermissionException
 	 * @throws \OCP\AppFramework\Db\MultipleObjectsReturnedException
 	 * @throws BadRequestException
 	 */
-	public function update($id, $title, $color, $archived) {
+	public function update($id, $title, $color, $archived, $coverImages) {
 		if (is_numeric($id) === false) {
 			throw new BadRequestException('board id must be a number');
 		}
@@ -428,12 +429,17 @@ class BoardService {
 			throw new BadRequestException('archived must be a boolean');
 		}
 
+		if (is_bool($coverImages) === false) {
+			throw new BadRequestException('coverImages must be a boolean');
+		}
+
 		$this->permissionService->checkPermission($this->boardMapper, $id, Acl::PERMISSION_MANAGE);
 		$board = $this->find($id);
 		$changes = new ChangeSet($board);
 		$board->setTitle($title);
 		$board->setColor($color);
 		$board->setArchived($archived);
+		$board->setCoverImages($coverImages);
 		$changes->setAfter($board);
 		$this->boardMapper->update($board); // operate on clone so we can check for updated fields
 		$this->boardMapper->mapOwner($board);

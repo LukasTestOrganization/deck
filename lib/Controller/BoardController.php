@@ -73,10 +73,11 @@ class BoardController extends ApiController {
 	 * @param $title
 	 * @param $color
 	 * @param $archived
+	 * @param $coverImages
 	 * @return \OCP\AppFramework\Db\Entity
 	 */
-	public function update($id, $title, $color, $archived) {
-		return $this->boardService->update($id, $title, $color, $archived);
+	public function update($id, $title, $color, $archived, $coverImages) {
+		return $this->boardService->update($id, $title, $color, $archived, $coverImages);
 	}
 
 	/**

@@ -35,7 +35,14 @@
 				{{ board.title }} » {{ stack.title }}
 			</div>
 			<div class="card-upper">
-				<h3 v-if="compactMode || isArchived || showArchived || !canEdit || standalone">
+				<div v-if="currentBoard.coverImages && images.length" class="imageCover">
+					<div class="imageCard" :style="mimetypeForAttachment(images[0])">
+						<div v-if="loading" class="emptycontent">
+							<div class="icon icon-loading" />
+						</div>
+					</div>
+				</div>
+				<h3 v-if="compactMode || isArchived || showArchived || !canEdit">
 					{{ card.title }}
 				</h3>
 				<h3 v-else-if="!editing">
@@ -85,6 +92,7 @@ import labelStyle from '../../mixins/labelStyle'
 import AttachmentDragAndDrop from '../AttachmentDragAndDrop'
 import CardMenu from './CardMenu'
 import DueDate from './badges/DueDate'
+import { generateUrl } from '@nextcloud/router'
 
 export default {
 	name: 'CardItem',
@@ -111,7 +119,12 @@ export default {
 		return {
 			editing: false,
 			copiedCard: null,
+			images: null,
+			loading: false,
 		}
+	},
+	mounted() {
+		this.loadImages()
 	},
 	computed: {
 		...mapState({
@@ -121,6 +134,7 @@ export default {
 		}),
 		...mapGetters([
 			'isArchived',
+
 		]),
 		board() {
 			return this.$store.getters.boardById(this?.stack?.boardId)
@@ -143,6 +157,21 @@ export default {
 		},
 		labelsSorted() {
 			return [...this.card.labels].sort((a, b) => (a.title < b.title) ? -1 : 1)
+		},
+		mimetypeForAttachment() {
+			return (attachment) => {
+				if (!attachment) {
+					return {}
+				}
+				const url = attachment.extendedData.hasPreview ? this.attachmentPreview(attachment) : OC.MimeType.getIconUrl(attachment.extendedData.mimetype)
+				const styles = {
+					'background-image': `url("${url}")`,
+				}
+				return styles
+			}
+		},
+		attachmentPreview() {
+			return (attachment) => (attachment.extendedData.fileid ? generateUrl(`/core/preview?fileId=${attachment.extendedData.fileid}&x=260&y=260&a=true`) : null)
 		},
 	},
 	watch: {
@@ -172,6 +201,12 @@ export default {
 		},
 		applyLabelFilter(label) {
 			this.$nextTick(() => this.$store.dispatch('toggleFilter', { tags: [label.id] }))
+		},
+		async loadImages() {
+			this.loading = true
+			await this.$store.dispatch('fetchAttachments', this.id)
+			this.loading = false
+			this.images = [...this.$store.getters.attachmentsByCard(this.id)].filter(attachment => attachment.deletedAt >= 0).sort((a, b) => b.id - a.id)
 		},
 	},
 }
@@ -203,7 +238,12 @@ export default {
 		&.current-card {
 			box-shadow: 0 0 5px 1px var(--color-box-shadow);
 		}
-
+		.imageCard {
+			width: 272px;
+			height: 250px;
+			background-size: cover;
+			border-radius: var(--border-radius-large) var(--border-radius-large) 0 0 ;
+		}
 		.card-upper {
 			display: flex;
 			min-height: 44px;

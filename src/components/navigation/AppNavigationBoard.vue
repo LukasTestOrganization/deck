@@ -32,7 +32,6 @@
 			slot="counter"
 			class="icon-shared"
 			style="opacity: 0.5" />
-
 		<template v-if="!deleted" slot="actions">
 			<template v-if="!isDueSubmenuActive">
 				<ActionButton
@@ -111,7 +110,11 @@
 				@click="isDueSubmenuActive=true">
 				{{ dueDateReminderText }}
 			</ActionButton>
-
+			<ActionCheckbox v-if="canManage"
+				:checked="board.coverImages"
+				@change="actionToggleCoverImages">
+				{{ t('deck', 'Show cover images') }}
+			</ActionCheckbox>
 			<ActionButton v-if="canManage && !isDueSubmenuActive"
 				icon="icon-delete"
 				:close-after-click="true"
@@ -133,7 +136,7 @@
 </template>
 
 <script>
-import { AppNavigationIconBullet, AppNavigationCounter, AppNavigationItem, ColorPicker, Actions, ActionButton } from '@nextcloud/vue'
+import { AppNavigationIconBullet, AppNavigationCounter, AppNavigationItem, ColorPicker, Actions, ActionButton, ActionCheckbox } from '@nextcloud/vue'
 import ClickOutside from 'vue-click-outside'
 
 export default {
@@ -145,6 +148,7 @@ export default {
 		ColorPicker,
 		Actions,
 		ActionButton,
+		ActionCheckbox,
 	},
 	directives: {
 		ClickOutside,
@@ -304,6 +308,9 @@ export default {
 			await this.$store.dispatch('setConfig', setting)
 			this.isDueSubmenuActive = false
 			this.updateDueSetting = null
+		},
+		actionToggleCoverImages() {
+			this.$store.dispatch('toggleCoverImages', this.board)
 		},
 	},
 }

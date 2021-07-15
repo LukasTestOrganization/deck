@@ -36,6 +36,7 @@ class Board extends RelationalEntity {
 	protected $stacks = [];
 	protected $deletedAt = 0;
 	protected $lastModified = 0;
+	protected $coverImages = true;
 
 	protected $settings = [];
 
@@ -45,6 +46,7 @@ class Board extends RelationalEntity {
 		$this->addType('archived', 'boolean');
 		$this->addType('deletedAt', 'integer');
 		$this->addType('lastModified', 'integer');
+		$this->addType('coverImages', 'boolean');
 		$this->addRelation('labels');
 		$this->addRelation('acl');
 		$this->addRelation('shared');
