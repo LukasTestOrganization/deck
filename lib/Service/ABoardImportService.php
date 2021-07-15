@@ -34,6 +34,8 @@ abstract class ABoardImportService {
 
 	abstract function assignCardsToLabels(): self;
 
+	abstract function importParticipants(): self;
+
 	abstract function importComments(): self;
 
 	abstract public function importLabels(): self;

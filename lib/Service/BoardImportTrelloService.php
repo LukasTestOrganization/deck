@@ -204,8 +204,6 @@ class BoardImportTrelloService extends ABoardImportService {
 				$card->setDuedate($duedate);
 			}
 			$this->cards[$trelloCard->id] = $card;
-			$this->cardsTrello[$trelloCard->id] = $trelloCard;
-			// $this->assignToMember($trelloCard);
 		}
 		return $this->cards;
 	}
@@ -232,13 +230,15 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this;
 	}
 
-	private function assignToMember(Card $card, $trelloCard): ABoardImportService {
-		foreach ($trelloCard->idMembers as $idMember) {
-			$assignment = new Assignment();
-			$assignment->setCardId($card->getId());
-			$assignment->setParticipant($this->members[$idMember]->getUID());
-			$assignment->setType(Assignment::TYPE_USER);
-			$assignment = $this->assignmentMapper->insert($assignment);
+	public function importParticipants(): ABoardImportService {
+		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
+			foreach ($trelloCard->idMembers as $idMember) {
+				$assignment = new Assignment();
+				$assignment->setCardId($this->cards[$trelloCard->id]->getId());
+				$assignment->setParticipant($this->members[$idMember]->getUID());
+				$assignment->setType(Assignment::TYPE_USER);
+				$assignment = $this->assignmentMapper->insert($assignment);
+			}
 		}
 		return $this;
 	}

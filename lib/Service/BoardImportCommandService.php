@@ -174,5 +174,7 @@ class BoardImportCommandService extends BoardImportService {
 		$this->assignCardsToLabels();
 		$this->getOutput()->writeln('Iporting comments...');
 		$this->importComments();
+		$this->getOutput()->writeln('Iporting participants...');
+		$this->importParticipants();
 	}
 }

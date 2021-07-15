@@ -295,6 +295,10 @@ class BoardImportService {
 		}
 	}
 
+	public function importParticipants() {
+		$this->getImportSystem()->importParticipants();
+	}
+
 	public function setData(\stdClass $data): self {
 		$this->data = $data;
 		return $this;
