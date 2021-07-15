@@ -197,11 +197,11 @@ class BoardImportTrelloService extends ABoardImportService {
 			return;
 		}
 		$trelloCard->desc .= "\n\n## {$this->l10n->t('Attachments')}\n";
-		$trelloCard->desc .= "| {$this->l10n->t('URL')} | {$this->l10n->t('Name')} | {$this->l10n->t('date')} |\n";
-		$trelloCard->desc .= "|---|---|---|\n";
+		$trelloCard->desc .= "| {$this->l10n->t('File')} | {$this->l10n->t('date')} |\n";
+		$trelloCard->desc .= "|---|---\n";
 		foreach ($trelloCard->attachments as $attachment) {
 			$name = $attachment->name === $attachment->url ? null : $attachment->name;
-			$trelloCard->desc .= "| {$attachment->url} | {$name} | {$attachment->date} |\n";
+			$trelloCard->desc .= "| [{$name}]({$attachment->url}) | {$attachment->date} |\n";
 		}
 		return $this;
 	}
