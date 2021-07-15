@@ -28,9 +28,9 @@ use JsonSchema\Validator;
 use OCA\Deck\AppInfo\Application;
 use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\AclMapper;
+use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\BoardMapper;
-use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\Label;
 use OCA\Deck\Db\LabelMapper;
@@ -38,7 +38,6 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NotFoundException;
 use OCP\Comments\IComment;
 use OCP\Comments\ICommentsManager;
-use OCP\Comments\MessageTooLongException;
 use OCP\Comments\NotFoundException as CommentNotFoundException;
 use OCP\IDBConnection;
 use OCP\IUserManager;
@@ -58,6 +57,8 @@ class BoardImportService {
 	private $stackMapper;
 	/** @var CardMapper */
 	private $cardMapper;
+	/** @var AssignmentMapper */
+	private $assignmentMapper;
 	/** @var ICommentsManager */
 	private $commentsManager;
 	/** @var string */
@@ -88,6 +89,7 @@ class BoardImportService {
 		AclMapper $aclMapper,
 		LabelMapper $labelMapper,
 		StackMapper $stackMapper,
+		AssignmentMapper $assignmentMapper,
 		CardMapper $cardMapper,
 		ICommentsManager $commentsManager
 	) {
@@ -98,6 +100,7 @@ class BoardImportService {
 		$this->labelMapper = $labelMapper;
 		$this->stackMapper = $stackMapper;
 		$this->cardMapper = $cardMapper;
+		$this->assignmentMapper = $assignmentMapper;
 		$this->commentsManager = $commentsManager;
 	}
 
@@ -175,6 +178,11 @@ class BoardImportService {
 		}
 
 		return $this->systemInstance;
+	}
+
+	public function insertAssignment($assignment): self {
+		$this->assignmentMapper->insert($assignment);
+		return $this;
 	}
 
 	public function importBoard() {

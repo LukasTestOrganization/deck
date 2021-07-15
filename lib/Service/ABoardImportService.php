@@ -21,24 +21,24 @@ abstract class ABoardImportService {
 	/**
 	 * @return Stack[]
 	 */
-	abstract function getStacks(): array;
+	abstract public function getStacks(): array;
 
 	/**
 	 * @return Card[]
 	 */
-	abstract function getCards(): array;
+	abstract public function getCards(): array;
 
-	abstract function updateStack(string $id, Stack $stack): self;
+	abstract public function updateStack(string $id, Stack $stack): self;
 
-	abstract function updateCard(string $id, Card $card): self;
+	abstract public function updateCard(string $id, Card $card): self;
 
-	abstract function assignCardsToLabels(): self;
+	abstract public function importParticipants(): self;
 
-	abstract function importParticipants(): self;
-
-	abstract function importComments(): self;
+	abstract public function importComments(): self;
 
 	abstract public function importLabels(): self;
+
+	abstract public function assignCardsToLabels(): self;
 
 	abstract public function validateUsers(): self;
 
