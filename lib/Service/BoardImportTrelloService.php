@@ -27,7 +27,6 @@ use OC\Comments\Comment;
 use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
-use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\Label;
@@ -37,8 +36,6 @@ use OCP\IUser;
 use OCP\IUserManager;
 
 class BoardImportTrelloService extends ABoardImportService {
-	/** @var AssignmentMapper */
-	private $assignmentMapper;
 	/** @var IUserManager */
 	private $userManager;
 	/** @var IL10N */
@@ -61,13 +58,9 @@ class BoardImportTrelloService extends ABoardImportService {
 	private $members = [];
 
 	public function __construct(
-		BoardService $boardService,
-		AssignmentMapper $assignmentMapper,
 		IUserManager $userManager,
 		IL10N $l10n
 	) {
-		$this->boardService = $boardService;
-		$this->assignmentMapper = $assignmentMapper;
 		$this->userManager = $userManager;
 		$this->l10n = $l10n;
 	}
