@@ -99,9 +99,6 @@ class BoardImportCommandService extends BoardImportService {
 		return parent::validateConfig();
 	}
 
-	/**
-	 * @return void
-	 */
 	protected function validateSystem(): self {
 		try {
 			return parent::validateSystem();
