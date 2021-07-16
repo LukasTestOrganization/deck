@@ -25,7 +25,6 @@ namespace OCA\Deck\Service;
 
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
-use OC\Comments\Comment;
 use OCA\Deck\AppInfo\Application;
 use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\AclMapper;
