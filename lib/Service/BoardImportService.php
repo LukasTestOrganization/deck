@@ -121,11 +121,10 @@ class BoardImportService {
 		}
 	}
 
-	public function validate(): self {
+	public function validate() {
 		$this->validateSystem();
 		$this->validateConfig();
 		$this->validateUsers();
-		return $this;
 	}
 
 	protected function validateSystem(): self {

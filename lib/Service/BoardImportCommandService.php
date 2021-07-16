@@ -60,10 +60,9 @@ class BoardImportCommandService extends BoardImportService {
 		return $this->output;
 	}
 
-	public function validate(): self {
+	public function validate() {
 		$this->validateData();
 		parent::validate();
-		return $this;
 	}
 
 	protected function validateConfig(): self {
