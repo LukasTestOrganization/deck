@@ -65,12 +65,6 @@ class BoardImportTrelloService extends ABoardImportService {
 		$this->l10n = $l10n;
 	}
 
-	public function validate(): ABoardImportService {
-		$this->boardImportTrelloService->validateOwner();
-		$this->boardImportTrelloService->validateUsers();
-		return $this;
-	}
-
 	/**
 	 * @return ABoardImportService
 	 */
