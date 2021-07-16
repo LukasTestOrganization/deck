@@ -37,7 +37,7 @@ abstract class ABoardImportService {
 
 	abstract public function importComments();
 
-	/** @var Label[] */
+	/** @return Label[] */
 	abstract public function importLabels(): array;
 
 	abstract public function assignCardsToLabels(): self;
