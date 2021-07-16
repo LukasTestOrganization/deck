@@ -987,6 +987,32 @@ For now only `deck_file` is supported as an attachment type.
 
 ##### 200 Success
 
+### GET /boards/import/getSystems - Import a board
+
+#### Request parameters
+
+#### Response
+
+```json
+[
+  "trello"
+]
+```
+
+### POST /boards/import - Import a board
+
+#### Request parameters
+
+| Parameter    | Type    | Description                                   |
+| ------------ | ------- | --------------------------------------------- |
+| system       | string  | The allowed name of system to import from     |
+| config       | Object  | The config object  (JSON)                     |
+| data         | Object  | The data object to import (JSON)              |
+
+#### Response
+
+##### 200 Success
+
 # OCS API
 
 The following endpoints are available through the Nextcloud OCS endpoint, which is available at `/ocs/v2.php/apps/deck/api/v1.0/`. 
