@@ -22,12 +22,11 @@
  */
 namespace OCA\Deck\Controller;
 
+use OCA\Deck\Db\Board;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
-
 use OCA\Deck\Service\BoardImportService;
-use OCA\Deck\Db\Board;
 
 class BoardImportApiControllerTest extends \Test\TestCase {
 	private $appName = 'deck';
@@ -57,5 +56,19 @@ class BoardImportApiControllerTest extends \Test\TestCase {
 		$actual = $this->controller->getAllowedSystems();
 		$expected = new DataResponse(['trello'], HTTP::STATUS_OK);
 		$this->assertEquals($expected, $actual);
+	}
+
+	public function testImport() {
+		$system = 'trello';
+		$config = [
+			'owner' => 'test'
+		];
+		$data = [
+			'name' => 'test'
+		];
+		$actual = $this->controller->import($system, $config, $data);
+		$board = $this->createMock(Board::class);
+		$this->assertInstanceOf(Board::class, $board);
+		$this->assertEquals(HTTP::STATUS_OK, $actual->getStatus());
 	}
 }
