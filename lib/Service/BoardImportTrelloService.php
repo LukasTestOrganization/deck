@@ -79,8 +79,8 @@ class BoardImportTrelloService extends ABoardImportService {
 			if (!$user) {
 				throw new \LogicException('Trello user ' . $trelloUid . ' not found in property "members" of json data');
 			}
-			if (!is_string($nextcloudUid)) {
-				throw new \LogicException('User on setting uidRelation must be a string');
+			if (!is_string($nextcloudUid) && !is_numeric($nextcloudUid)) {
+				throw new \LogicException('User on setting uidRelation is invalid');
 			}
 			$this->getImportService()->getConfig('uidRelation')->$trelloUid = $this->userManager->get($nextcloudUid);
 			if (!$this->getImportService()->getConfig('uidRelation')->$trelloUid) {
