@@ -379,7 +379,7 @@ class BoardImportService {
 		if (!$validator->isValid()) {
 			throw new ConflictException('Invalid config file', $validator->getErrors());
 		}
-		$this->setConfigInstance($newConfig, false);
+		$this->setConfigInstance($newConfig);
 		$this->validateOwner();
 		return $this;
 	}
