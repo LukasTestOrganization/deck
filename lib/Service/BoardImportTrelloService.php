@@ -175,8 +175,8 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this->cards;
 	}
 
-	public function updateCard($cardTrelloId, Card $card): self {
-		$this->cards[$cardTrelloId] = $card;
+	public function updateCard($id, Card $card): self {
+		$this->cards[$id] = $card;
 		return $this;
 	}
 
