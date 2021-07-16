@@ -5,6 +5,8 @@ namespace OCA\Deck\Service;
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
 use OCA\Deck\Command\BoardImport;
+use OCA\Deck\Exceptions\ConflictException;
+use OCA\Deck\NotFoundException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -61,15 +63,15 @@ class BoardImportCommandService extends BoardImportService {
 	}
 
 	public function validate(): self {
-		$this->validateSystem();
-		$this->validateConfig();
 		$this->validateData();
+		parent::validate();
 		return $this;
 	}
 
-	private function validateConfig(): void {
-		$configFile = $this->getInput()->getOption('config');
-		if (!is_file($configFile)) {
+	protected function validateConfig(): self {
+		try {
+			return parent::validateConfig();
+		} catch (NotFoundException $e) {
 			$helper = $this->getCommand()->getHelper('question');
 			$question = new Question(
 				'Please inform a valid config json file: ',
@@ -84,44 +86,33 @@ class BoardImportCommandService extends BoardImportService {
 				return $answer;
 			});
 			$configFile = $helper->ask($this->getInput(), $this->getOutput(), $question);
-			$this->getInput()->setOption('config', $configFile);
-		}
-
-		$config = json_decode(file_get_contents($configFile));
-		$system = $this->getSystem();
-		$schemaPath = __DIR__ . '/fixtures/config-' . $system . '-schema.json';
-		$validator = new Validator();
-		$validator->validate(
-			$config,
-			(object)['$ref' => 'file://' . realpath($schemaPath)],
-			Constraint::CHECK_MODE_APPLY_DEFAULTS
-		);
-		if (!$validator->isValid()) {
+			$this->setConfigInstance($configFile);
+		} catch (ConflictException $e) {
 			$this->getOutput()->writeln('<error>Invalid config file</error>');
 			$this->getOutput()->writeln(array_map(function ($v) {
 				return $v['message'];
-			}, $validator->getErrors()));
+			}, $e->getData()));
 			$this->getOutput()->writeln('Valid schema:');
+			$schemaPath = __DIR__ . '/fixtures/config-' . $this->getSystem() . '-schema.json';
 			$this->getOutput()->writeln(print_r(file_get_contents($schemaPath), true));
 			$this->getInput()->setOption('config', null);
-			$this->validateConfig($this->getInput(), $this->getOutput());
+			$this->setConfigInstance('');
 		}
-		$this->setConfigInstance($config);
-		$this->validateOwner();
+		return parent::validateConfig();
 	}
 
 	/**
 	 * @return void
 	 */
-	private function validateSystem(): self {
-		$system = $this->getInput()->getOption('system');
-		if (in_array($system, $this->getAllowedImportSystems())) {
-			return $this->setSystem($system);
+	protected function validateSystem(): self {
+		try {
+			return parent::validateSystem();
+		} catch (\Throwable $th) {
 		}
 		$helper = $this->getCommand()->getHelper('question');
 		$question = new ChoiceQuestion(
 			'Please inform a source system',
-			$this->allowedSystems,
+			$this->getAllowedImportSystems(),
 			0
 		);
 		$question->setErrorMessage('System %s is invalid.');
@@ -154,7 +145,6 @@ class BoardImportCommandService extends BoardImportService {
 			$this->getOutput()->writeln('<error>Is not a json file: ' . $filename . '</error>');
 			$this->validateData($this->getInput(), $this->getOutput());
 		}
-		$this->validateUsers();
 		return $this;
 	}
 

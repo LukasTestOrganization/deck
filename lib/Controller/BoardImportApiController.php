@@ -24,18 +24,26 @@
 namespace OCA\Deck\Controller;
 
 use OCA\Deck\Service\BoardImportService;
-use OCA\Files\Controller\ApiController;
+use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IRequest;
 
 class BoardImportApiController extends ApiController {
 	/** @var BoardImportService */
 	private $boardImportService;
+	/** @var string */
+	private $userId;
 
 	public function __construct(
-		BoardImportService $boardImportService
+		$appName,
+		IRequest $request,
+		BoardImportService $boardImportService,
+		$userId
 	) {
+		parent::__construct($appName, $request);
 		$this->boardImportService = $boardImportService;
+		$this->userId = $userId;
 	}
 
 	/**
@@ -44,7 +52,13 @@ class BoardImportApiController extends ApiController {
 	 * @NoCSRFRequired
 	 */
 	public function import($system, $config, $data) {
-		$board = $this->boardImportService->import($system, $config, $data);
-		return new DataResponse($board, Http::STATUS_OK);
+		$this->boardImportService->setSystem($system);
+		$config = json_decode(json_encode($config));
+		$config->owner = $this->userId;
+		$this->boardImportService->setConfigInstance($config);
+		$this->boardImportService->setData(json_decode(json_encode($data)));
+		$this->boardImportService->validate();
+		$this->boardImportService->import();
+		return new DataResponse($this->boardImportService->getBoard(), Http::STATUS_OK);
 	}
 }

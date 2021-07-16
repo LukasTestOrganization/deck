@@ -23,32 +23,23 @@
 
 namespace OCA\Deck\Command;
 
-use OCA\Deck\Command\ImportHelper\TrelloHelper;
-use OCA\Deck\Service\AImportService;
-use OCA\Deck\Service\BoardImportService;
+use OCA\Deck\Service\BoardImportCommandService;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class BoardImportTest extends \Test\TestCase {
-	/** @var TrelloHelper */
-	private $trelloHelper;
-	/** @var BoardImportService */
-	private $boardImportService;
+	/** @var BoardImportCommandService */
+	private $boardImportCommandService;
 	/** @var BoardImport */
 	private $boardImport;
 
 	public function setUp(): void {
 		parent::setUp();
-		$this->trelloHelper = $this->createMock(TrelloHelper::class);
-		$this->boardImportService = $this->createMock(BoardImportService::class);
-		$this->boardImportService
-			->method('getAllowedImportSystems')
-			->willReturn(['trello']);
+		$this->boardImportCommandService = $this->createMock(boardImportCommandService::class);
 		$this->boardImport = new BoardImport(
-			$this->trelloHelper,
-			$this->boardImportService
+			$this->boardImportCommandService
 		);
 		$questionHelper = new QuestionHelper();
 		$this->boardImport->setHelperSet(
@@ -61,32 +52,15 @@ class BoardImportTest extends \Test\TestCase {
 	public function testExecuteWithSuccess() {
 		$input = $this->createMock(InputInterface::class);
 
-		$input->method('getOption')
-			->withConsecutive(
-				[$this->equalTo('system')],
-				[$this->equalTo('config')],
-				[$this->equalTo('data')]
-			)
-			->will($this->returnValueMap([
-				['system', 'trello'],
-				['config', __DIR__ . '/../../data/config-trello.json'],
-				['data', __DIR__ . '/../../data/data-trello.json']
-			]));
 		$output = $this->createMock(OutputInterface::class);
 
 		$output
 			->expects($this->once())
 			->method('writeLn')
 			->with('Done!');
-		$this->boardImportService
-			->method('getSystem')
-			->willReturn('trello');
-		$importService = $this->createMock(AImportService::class);
-		$this->boardImportService
-			->method('getImportService')
-			->willReturn($importService);
 
-		$this->invokePrivate($this->boardImport, 'interact', [$input, $output]);
+		$actual = $this->invokePrivate($this->boardImport, 'interact', [$input, $output]);
+		$this->assertNull($actual);
 		$actual = $this->invokePrivate($this->boardImport, 'execute', [$input, $output]);
 		$this->assertEquals(0, $actual);
 	}

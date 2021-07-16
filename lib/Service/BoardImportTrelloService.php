@@ -24,6 +24,7 @@
 namespace OCA\Deck\Service;
 
 use OC\Comments\Comment;
+use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
@@ -170,6 +171,9 @@ class BoardImportTrelloService extends ABoardImportService {
 
 			$card->setTitle($trelloCard->name);
 			$card->setStackId($this->stacks[$trelloCard->idList]->getId());
+			$cardsOnStack = $this->stacks[$trelloCard->idList]->getCards();
+			$cardsOnStack[] = $card;
+			$this->stacks[$trelloCard->idList]->setCards($cardsOnStack);
 			$card->setType('plain');
 			$card->setOrder($trelloCard->idShort);
 			$card->setOwner($this->getImportService()->getConfig('owner')->getUID());
@@ -209,6 +213,9 @@ class BoardImportTrelloService extends ABoardImportService {
 	public function importParticipants(): ABoardImportService {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->idMembers as $idMember) {
+				if (empty($this->members[$idMember])) {
+					continue;
+				}
 				$assignment = new Assignment();
 				$assignment->setCardId($this->cards[$trelloCard->id]->getId());
 				$assignment->setParticipant($this->members[$idMember]->getUID());
@@ -219,7 +226,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this;
 	}
 
-	public function importComments(): ABoardImportService {
+	public function importComments() {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			$comments = array_filter(
 				$this->getImportService()->getData()->actions,
@@ -246,7 +253,6 @@ class BoardImportTrelloService extends ABoardImportService {
 				);
 			}
 		}
-		return $this;
 	}
 
 	private function replaceUsernames($text) {
@@ -320,13 +326,16 @@ class BoardImportTrelloService extends ABoardImportService {
 
 	public function getBoard(): Board {
 		$board = new Board();
+		if (!$this->getImportService()->getData()->name) {
+			throw new BadRequestException('Invalid name of board');
+		}
 		$board->setTitle($this->getImportService()->getData()->name);
 		$board->setOwner($this->getImportService()->getConfig('owner')->getUID());
 		$board->setColor($this->getImportService()->getConfig('color'));
 		return $board;
 	}
 
-	public function importLabels(): self {
+	public function importLabels(): array {
 		foreach ($this->getImportService()->getData()->labels as $label) {
 			if (empty($label->name)) {
 				$labelTitle = 'Unnamed ' . $label->color . ' label';
@@ -340,6 +349,6 @@ class BoardImportTrelloService extends ABoardImportService {
 			);
 			$this->labels[$label->id] = $newLabel;
 		}
-		return $this;
+		return $this->labels;
 	}
 }
