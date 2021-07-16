@@ -43,7 +43,7 @@
 		"@nextcloud/vue": "^3.10.1",
 		"@nextcloud/vue-dashboard": "^2.0.1",
 		"blueimp-md5": "^2.18.0",
-		"dompurify": "^2.2.9",
+		"dompurify": "^2.3.0",
 		"lodash": "^4.17.21",
 		"markdown-it": "^12.1.0",
 		"markdown-it-task-lists": "^2.1.1",

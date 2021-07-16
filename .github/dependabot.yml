@@ -39,3 +39,13 @@ updates:
     versions:
     - "< 16"
     - ">= 15.a"
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "03:00"
+    timezone: Europe/Paris
+  open-pull-requests-limit: 10
+  reviewers:
+  - juliushaertl
