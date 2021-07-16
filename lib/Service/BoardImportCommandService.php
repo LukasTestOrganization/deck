@@ -138,7 +138,7 @@ class BoardImportCommandService extends BoardImportService {
 		$this->setData(json_decode(file_get_contents($filename)));
 		if (!$this->getData()) {
 			$this->getOutput()->writeln('<error>Is not a json file: ' . $filename . '</error>');
-			$this->validateData($this->getInput(), $this->getOutput());
+			$this->validateData();
 		}
 		return $this;
 	}
