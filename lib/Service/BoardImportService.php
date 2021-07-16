@@ -156,10 +156,11 @@ class BoardImportService {
 				}
 				return true;
 			});
-			$this->allowedSystems = array_map(function ($name) {
+			$allowedSystems = array_map(function ($name) {
 				preg_match('/\/BoardImport(?<system>\w+)Service\.php$/', $name, $matches);
 				return lcfirst($matches['system']);
 			}, $allowedSystems);
+			$this->allowedSystems = array_values($allowedSystems);
 		}
 		return $this->allowedSystems;
 	}
