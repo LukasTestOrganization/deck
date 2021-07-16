@@ -175,6 +175,10 @@ class BoardImportService {
 		return $this->systemInstance;
 	}
 
+	public function setImportSystem($instance) {
+		$this->systemInstance = $instance;
+	}
+
 	public function insertAssignment($assignment): self {
 		$this->assignmentMapper->insert($assignment);
 		return $this;

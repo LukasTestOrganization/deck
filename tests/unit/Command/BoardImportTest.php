@@ -51,6 +51,16 @@ class BoardImportTest extends \Test\TestCase {
 
 	public function testExecuteWithSuccess() {
 		$input = $this->createMock(InputInterface::class);
+		$input
+			->method('getOption')
+			->withConsecutive(
+				['system'],
+				['config']
+			)
+			->will($this->returnValueMap([
+				['system', 'trello'],
+				['config', null]
+			]));
 
 		$output = $this->createMock(OutputInterface::class);
 
