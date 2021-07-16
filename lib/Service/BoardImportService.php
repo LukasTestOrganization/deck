@@ -25,6 +25,7 @@ namespace OCA\Deck\Service;
 
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
+use OC\Comments\Comment;
 use OCA\Deck\AppInfo\Application;
 use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\AclMapper;
@@ -38,7 +39,6 @@ use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Exceptions\ConflictException;
 use OCA\Deck\NotFoundException;
-use OCP\Comments\IComment;
 use OCP\Comments\ICommentsManager;
 use OCP\Comments\NotFoundException as CommentNotFoundException;
 use OCP\IDBConnection;
@@ -260,7 +260,7 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function insertComment($cardId, IComment $comment): IComment {
+	public function insertComment($cardId, Comment $comment): Comment {
 		$comment->setObject('deckCard', (string) $cardId);
 		$comment->setVerb('comment');
 		// Check if parent is a comment on the same card
