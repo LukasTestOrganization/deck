@@ -86,9 +86,10 @@ class BoardImportCommandService extends BoardImportService {
 		parent::validate();
 	}
 
-	protected function validateConfig(): self {
+	protected function validateConfig() {
 		try {
-			return parent::validateConfig();
+			parent::validateConfig();
+			return;
 		} catch (NotFoundException $e) {
 			$helper = $this->getCommand()->getHelper('question');
 			$question = new Question(
@@ -116,7 +117,8 @@ class BoardImportCommandService extends BoardImportService {
 			$this->getInput()->setOption('config', null);
 			$this->setConfigInstance('');
 		}
-		return parent::validateConfig();
+		parent::validateConfig();
+		return;
 	}
 
 	protected function validateSystem() {

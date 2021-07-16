@@ -355,7 +355,7 @@ class BoardImportService {
 		return $this;
 	}
 
-	protected function validateConfig(): self {
+	protected function validateConfig() {
 		$config = $this->getConfig();
 		if (empty($config)) {
 			throw new NotFoundException('Please inform a valid config json file');
@@ -379,7 +379,6 @@ class BoardImportService {
 		}
 		$this->setConfigInstance($newConfig);
 		$this->validateOwner();
-		return $this;
 	}
 
 	public function validateOwner(): self {
