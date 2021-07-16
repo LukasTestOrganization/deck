@@ -66,7 +66,7 @@ class BoardImportTrelloService extends ABoardImportService {
 	}
 
 	/**
-	 * @return ABoardImportService
+	 * @return self
 	 */
 	public function validateUsers(): self {
 		if (empty($this->getImportService()->getConfig('uidRelation'))) {
@@ -181,9 +181,9 @@ class BoardImportTrelloService extends ABoardImportService {
 	}
 
 	/**
-	 * @return ABoardImportService
+	 * @return self
 	 */
-	private function appendAttachmentsToDescription($trelloCard) {
+	private function appendAttachmentsToDescription($trelloCard): self {
 		if (empty($trelloCard->attachments)) {
 			return;
 		}
@@ -197,7 +197,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this;
 	}
 
-	public function importParticipants(): ABoardImportService {
+	public function importParticipants(): self {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->idMembers as $idMember) {
 				if (empty($this->members[$idMember])) {
