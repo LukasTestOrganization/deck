@@ -7,7 +7,6 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
-use OCP\Comments\IComment;
 
 abstract class ABoardImportService {
 	/** @var BoardImportService */

@@ -2,8 +2,6 @@
 
 namespace OCA\Deck\Service;
 
-use JsonSchema\Constraints\Constraint;
-use JsonSchema\Validator;
 use OCA\Deck\Command\BoardImport;
 use OCA\Deck\Exceptions\ConflictException;
 use OCA\Deck\NotFoundException;
