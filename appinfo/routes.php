@@ -90,7 +90,8 @@ return [
 		['name' => 'board_api#deleteAcl', 'url' => '/api/v{apiVersion}/boards/{boardId}/acl/{aclId}', 'verb' => 'DELETE'],
 		['name' => 'board_api#updateAcl', 'url' => '/api/v{apiVersion}/boards/{boardId}/acl/{aclId}', 'verb' => 'PUT'],
 
-		['name' => 'board_import_api#import', 'url' => '/api/v{apiVersion}/boards/import','verb' => 'POST', 'requirements' => ['apiVersion' => '1.1']],
+		['name' => 'board_import_api#getAllowedSystems', 'url' => '/api/v{apiVersion}/boards/import/getSystems','verb' => 'GET'],
+		['name' => 'board_import_api#import', 'url' => '/api/v{apiVersion}/boards/import','verb' => 'POST'],
 
 
 		['name' => 'stack_api#index', 'url' => '/api/v{apiVersion}/boards/{boardId}/stacks', 'verb' => 'GET'],
