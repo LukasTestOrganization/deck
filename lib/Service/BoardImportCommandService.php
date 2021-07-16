@@ -119,9 +119,10 @@ class BoardImportCommandService extends BoardImportService {
 		return parent::validateConfig();
 	}
 
-	protected function validateSystem(): self {
+	protected function validateSystem() {
 		try {
-			return parent::validateSystem();
+			parent::validateSystem();
+			return;
 		} catch (\Throwable $th) {
 		}
 		$helper = $this->getCommand()->getHelper('question');
@@ -133,7 +134,8 @@ class BoardImportCommandService extends BoardImportService {
 		$question->setErrorMessage('System %s is invalid.');
 		$system = $helper->ask($this->getInput(), $this->getOutput(), $question);
 		$this->getInput()->setOption('system', $system);
-		return $this->setSystem($system);
+		$this->setSystem($system);
+		return;
 	}
 
 	private function validateData(): self {

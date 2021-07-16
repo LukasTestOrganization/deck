@@ -126,11 +126,10 @@ class BoardImportService {
 		$this->validateUsers();
 	}
 
-	protected function validateSystem(): self {
+	protected function validateSystem() {
 		if (!in_array($this->getSystem(), $this->getAllowedImportSystems())) {
 			throw new NotFoundException('Invalid system');
 		}
-		return $this;
 	}
 
 	public function setSystem(string $system): self {
