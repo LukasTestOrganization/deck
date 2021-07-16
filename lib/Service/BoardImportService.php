@@ -260,7 +260,7 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function insertComment($cardId, Comment $comment): Comment {
+	public function insertComment($cardId, $comment) {
 		$comment->setObject('deckCard', (string) $cardId);
 		$comment->setVerb('comment');
 		// Check if parent is a comment on the same card
