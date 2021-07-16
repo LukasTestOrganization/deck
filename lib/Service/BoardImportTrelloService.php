@@ -185,7 +185,7 @@ class BoardImportTrelloService extends ABoardImportService {
 	 */
 	private function appendAttachmentsToDescription($trelloCard): self {
 		if (empty($trelloCard->attachments)) {
-			return;
+			return $this;
 		}
 		$trelloCard->desc .= "\n\n## {$this->l10n->t('Attachments')}\n";
 		$trelloCard->desc .= "| {$this->l10n->t('File')} | {$this->l10n->t('date')} |\n";
