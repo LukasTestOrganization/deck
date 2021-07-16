@@ -387,7 +387,7 @@ class BoardImportService {
 	public function validateOwner(): self {
 		$owner = $this->userManager->get($this->getConfig('owner'));
 		if (!$owner) {
-			throw new \LogicException('Owner "' . $this->getConfigboardImportService->getConfig('owner')->getUID() . '" not found on Nextcloud. Check setting json.');
+			throw new \LogicException('Owner "' . $this->getConfig('owner')->getUID() . '" not found on Nextcloud. Check setting json.');
 		}
 		$this->setConfig('owner', $owner);
 		return $this;
