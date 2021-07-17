@@ -31,6 +31,7 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
+use OCP\AppFramework\Db\Entity;
 use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -49,7 +50,7 @@ class BoardImportTrelloService extends ABoardImportService {
 	/**
 	 * Array of labels
 	 *
-	 * @var Label[]
+	 * @var Label|Entity[]
 	 */
 	private $labels = [];
 	/** @var Card[] */

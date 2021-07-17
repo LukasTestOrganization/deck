@@ -81,7 +81,7 @@ class BoardImport extends Command {
 		$this->boardImportCommandService
 			->setInput($input)
 			->setOutput($output)
-			->setSystem((string) $input->getOption('system'))
+			->setSystem($input->getOption('system'))
 			->setConfigInstance($input->getOption('config'))
 			->validate();
 	}

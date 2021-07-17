@@ -40,6 +40,7 @@ use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Exceptions\ConflictException;
 use OCA\Deck\NotFoundException;
+use OCP\AppFramework\Db\Entity;
 use OCP\Comments\ICommentsManager;
 use OCP\Comments\NotFoundException as CommentNotFoundException;
 use OCP\IDBConnection;
@@ -69,7 +70,7 @@ class BoardImportService {
 	/** @var ABoardImportService */
 	private $systemInstance;
 	/** @var string[] */
-	private $allowedSystems;
+	private $allowedSystems = [];
 	/**
 	 * Data object created from config JSON
 	 *
@@ -134,7 +135,11 @@ class BoardImportService {
 		}
 	}
 
-	public function setSystem(string $system): self {
+	/**
+	 * @param mixed $system
+	 * @return self
+	 */
+	public function setSystem($system): self {
 		$this->system = $system;
 		return $this;
 	}
@@ -212,7 +217,7 @@ class BoardImportService {
 		return $labels;
 	}
 
-	public function createLabel(string $title, string $color, int $boardId): Label {
+	public function createLabel(string $title, string $color, int $boardId): Entity {
 		$label = new Label();
 		$label->setTitle($title);
 		$label->setColor($color);
@@ -333,7 +338,7 @@ class BoardImportService {
 	 * @return self
 	 */
 	public function setConfig(string $configName, $value): self {
-		if (!$this->config) {
+		if (empty((array) $this->config)) {
 			$this->setConfigInstance(new \stdClass);
 		}
 		$this->config->$configName = $value;
@@ -347,7 +352,7 @@ class BoardImportService {
 	 * @return mixed
 	 */
 	public function getConfig(string $configName = null) {
-		if (!is_object($this->config) || !$configName) {
+		if (!$configName) {
 			return $this->config;
 		}
 		if (!property_exists($this->config, $configName)) {
@@ -361,21 +366,21 @@ class BoardImportService {
 	 * @return self
 	 */
 	public function setConfigInstance($config): self {
+		if (is_string($config)) {
+			if (!is_file($config)) {
+				throw new NotFoundException('Please inform a valid config json file');
+			}
+			$config = json_decode(file_get_contents($config));
+			if (!is_object($config)) {
+				throw new NotFoundException('Please inform a valid config json file');
+			}
+		}
 		$this->config = $config;
 		return $this;
 	}
 
 	protected function validateConfig() {
 		$config = $this->getConfig();
-		if (empty($config)) {
-			throw new NotFoundException('Please inform a valid config json file');
-		}
-		if (is_string($config)) {
-			if (!is_file($config)) {
-				throw new NotFoundException('Please inform a valid config json file');
-			}
-			$config = json_decode(file_get_contents($config));
-		}
 		$schemaPath = $this->getJsonSchemaPath();
 		$validator = new Validator();
 		$newConfig = clone $config;

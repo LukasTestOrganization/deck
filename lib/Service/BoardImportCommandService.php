@@ -23,7 +23,6 @@
 
 namespace OCA\Deck\Service;
 
-use OCA\Deck\Command\BoardImport;
 use OCA\Deck\Exceptions\ConflictException;
 use OCA\Deck\NotFoundException;
 use Symfony\Component\Console\Command\Command;
@@ -42,7 +41,7 @@ class BoardImportCommandService extends BoardImportService {
 	/**
 	 * Data object created from config JSON
 	 *
-	 * @var \StdClass
+	 * @var \stdClass
 	 */
 	public $config;
 
@@ -57,7 +56,7 @@ class BoardImportCommandService extends BoardImportService {
 	}
 
 	/**
-	 * @return BoardImport
+	 * @return Command
 	 */
 	public function getCommand() {
 		return $this->command;
@@ -142,7 +141,7 @@ class BoardImportCommandService extends BoardImportService {
 
 	private function validateData(): self {
 		$filename = $this->getInput()->getOption('data');
-		if (!is_file($filename)) {
+		if (!is_string($filename) || !is_file($filename) || empty($filename)) {
 			$helper = $this->getCommand()->getHelper('question');
 			$question = new Question(
 				'Please inform a valid data json file: ',
