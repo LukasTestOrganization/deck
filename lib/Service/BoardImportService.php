@@ -66,7 +66,7 @@ class BoardImportService {
 	/** @var ICommentsManager */
 	private $commentsManager;
 	/** @var string */
-	private $system;
+	private $system = '';
 	/** @var ABoardImportService */
 	private $systemInstance;
 	/** @var string[] */
@@ -123,13 +123,13 @@ class BoardImportService {
 		}
 	}
 
-	public function validate() {
+	public function validate(): void {
 		$this->validateSystem();
 		$this->validateConfig();
 		$this->validateUsers();
 	}
 
-	public function validateSystem() {
+	public function validateSystem(): void {
 		if (!in_array($this->getSystem(), $this->getAllowedImportSystems())) {
 			throw new NotFoundException('Invalid system');
 		}
@@ -144,7 +144,7 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function getSystem() {
+	public function getSystem(): string {
 		return $this->system;
 	}
 
@@ -180,7 +180,7 @@ class BoardImportService {
 		return $this->systemInstance;
 	}
 
-	public function setImportSystem(ABoardImportService $instance) {
+	public function setImportSystem(ABoardImportService $instance): void {
 		$this->systemInstance = $instance;
 	}
 
@@ -189,13 +189,12 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function importBoard() {
+	public function importBoard(): void {
 		$board = $this->getImportSystem()->getBoard();
 		if ($board) {
 			$this->boardMapper->insert($board);
 			$this->board = $board;
 		}
-		return $this;
 	}
 
 	public function getBoard(): Board {
@@ -260,16 +259,15 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function assignCardsToLabels() {
+	public function assignCardsToLabels(): void {
 		$this->getImportSystem()->assignCardsToLabels();
 	}
 
-	public function importComments(): self {
+	public function importComments(): void {
 		$this->getImportSystem()->importComments();
-		return $this;
 	}
 
-	public function insertComment(string $cardId, Comment $comment) {
+	public function insertComment(string $cardId, Comment $comment): void {
 		$comment->setObject('deckCard', $cardId);
 		$comment->setVerb('comment');
 		// Check if parent is a comment on the same card
@@ -309,7 +307,6 @@ class BoardImportService {
 			if ($affectedRows > 0) {
 				$comment->setId((string)$qb->getLastInsertId());
 			}
-			return $comment;
 		} catch (\InvalidArgumentException $e) {
 			throw new BadRequestException('Invalid input values');
 		} catch (CommentNotFoundException $e) {
@@ -317,7 +314,7 @@ class BoardImportService {
 		}
 	}
 
-	public function importParticipants() {
+	public function importParticipants(): void {
 		$this->getImportSystem()->importParticipants();
 	}
 
@@ -326,7 +323,7 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function getData() {
+	public function getData(): \stdClass {
 		return $this->data;
 	}
 
@@ -379,7 +376,7 @@ class BoardImportService {
 		return $this;
 	}
 
-	protected function validateConfig() {
+	protected function validateConfig(): void {
 		$config = $this->getConfig();
 		$schemaPath = $this->getJsonSchemaPath();
 		$validator = new Validator();
@@ -396,11 +393,11 @@ class BoardImportService {
 		$this->validateOwner();
 	}
 
-	public function getJsonSchemaPath() {
+	public function getJsonSchemaPath(): string {
 		return __DIR__ . '/fixtures/config-' . $this->getSystem() . '-schema.json';
 	}
 
-	public function validateOwner() {
+	public function validateOwner(): void {
 		$owner = $this->userManager->get($this->getConfig('owner'));
 		if (!$owner) {
 			throw new \LogicException('Owner "' . $this->getConfig('owner')->getUID() . '" not found on Nextcloud. Check setting json.');
@@ -408,7 +405,7 @@ class BoardImportService {
 		$this->setConfig('owner', $owner);
 	}
 
-	public function validateUsers() {
+	public function validateUsers(): void {
 		$this->getImportSystem()->validateUsers();
 	}
 }

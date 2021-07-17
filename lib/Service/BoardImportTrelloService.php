@@ -48,9 +48,9 @@ class BoardImportTrelloService extends ABoardImportService {
 	 */
 	private $stacks = [];
 	/**
-	 * Array of labels
+	 * Array of Labels
 	 *
-	 * @var Label|Entity[]
+	 * @var Label[]|Entity[]
 	 */
 	private $labels = [];
 	/** @var Card[] */
@@ -66,7 +66,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		$this->l10n = $l10n;
 	}
 
-	public function validateUsers() {
+	public function validateUsers(): void {
 		if (empty($this->getImportService()->getConfig('uidRelation'))) {
 			return;
 		}
@@ -173,11 +173,11 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this->cards;
 	}
 
-	public function updateCard(string $id, Card $card) {
+	public function updateCard(string $id, Card $card): void {
 		$this->cards[$id] = $card;
 	}
 
-	private function appendAttachmentsToDescription(\stdClass $trelloCard) {
+	private function appendAttachmentsToDescription(\stdClass $trelloCard): void {
 		if (empty($trelloCard->attachments)) {
 			return;
 		}
@@ -190,7 +190,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		}
 	}
 
-	public function importParticipants() {
+	public function importParticipants(): void {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->idMembers as $idMember) {
 				if (empty($this->members[$idMember])) {
@@ -205,7 +205,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		}
 	}
 
-	public function importComments() {
+	public function importComments(): void {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			$comments = array_filter(
 				$this->getImportService()->getData()->actions,
@@ -234,14 +234,14 @@ class BoardImportTrelloService extends ABoardImportService {
 		}
 	}
 
-	private function replaceUsernames(string $text) {
+	private function replaceUsernames(string $text): string {
 		foreach ($this->getImportService()->getConfig('uidRelation') as $trello => $nextcloud) {
 			$text = str_replace($trello, $nextcloud->getUID(), $text);
 		}
 		return $text;
 	}
 
-	public function assignCardsToLabels() {
+	public function assignCardsToLabels(): void {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->labels as $label) {
 				$this->getImportService()->assignCardToLabel(
@@ -270,7 +270,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $return;
 	}
 
-	public function updateStack(string $id, Stack $stack) {
+	public function updateStack(string $id, Stack $stack): void {
 		$this->stacks[$id] = $stack;
 	}
 

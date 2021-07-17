@@ -51,7 +51,7 @@ class BoardImportApiController extends ApiController {
 	 * @CORS
 	 * @NoCSRFRequired
 	 */
-	public function import(string $system, array $config, array $data) {
+	public function import(string $system, array $config, array $data): DataResponse {
 		$this->boardImportService->setSystem($system);
 		$config = json_decode(json_encode($config));
 		$config->owner = $this->userId;
@@ -67,7 +67,7 @@ class BoardImportApiController extends ApiController {
 	 * @CORS
 	 * @NoCSRFRequired
 	 */
-	public function getAllowedSystems() {
+	public function getAllowedSystems(): DataResponse {
 		$allowedSystems = $this->boardImportService->getAllowedImportSystems();
 		return new DataResponse($allowedSystems, Http::STATUS_OK);
 	}
@@ -77,7 +77,7 @@ class BoardImportApiController extends ApiController {
 	 * @CORS
 	 * @NoCSRFRequired
 	 */
-	public function getConfigSchema(string $name) {
+	public function getConfigSchema(string $name): DataResponse {
 		$this->boardImportService->setSystem($name);
 		$this->boardImportService->validateSystem();
 		$jsonSchemaPath = json_decode(file_get_contents($this->boardImportService->getJsonSchemaPath()));
