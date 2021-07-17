@@ -126,7 +126,7 @@ class BoardImportService {
 		$this->validateUsers();
 	}
 
-	protected function validateSystem() {
+	public function validateSystem() {
 		if (!in_array($this->getSystem(), $this->getAllowedImportSystems())) {
 			throw new NotFoundException('Invalid system');
 		}
@@ -366,7 +366,7 @@ class BoardImportService {
 			}
 			$config = json_decode(file_get_contents($config));
 		}
-		$schemaPath = __DIR__ . '/fixtures/config-' . $this->getSystem() . '-schema.json';
+		$schemaPath = $this->getJsonSchemaPath();
 		$validator = new Validator();
 		$newConfig = clone $config;
 		$validator->validate(
@@ -379,6 +379,10 @@ class BoardImportService {
 		}
 		$this->setConfigInstance($newConfig);
 		$this->validateOwner();
+	}
+
+	public function getJsonSchemaPath() {
+		return __DIR__ . '/fixtures/config-' . $this->getSystem() . '-schema.json';
 	}
 
 	public function validateOwner(): self {
