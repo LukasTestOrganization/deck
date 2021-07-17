@@ -248,9 +248,8 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function assignCardsToLabels(): self {
+	public function assignCardsToLabels() {
 		$this->getImportSystem()->assignCardsToLabels();
-		return $this;
 	}
 
 	public function importComments(): self {
@@ -385,17 +384,15 @@ class BoardImportService {
 		return __DIR__ . '/fixtures/config-' . $this->getSystem() . '-schema.json';
 	}
 
-	public function validateOwner(): self {
+	public function validateOwner() {
 		$owner = $this->userManager->get($this->getConfig('owner'));
 		if (!$owner) {
 			throw new \LogicException('Owner "' . $this->getConfig('owner')->getUID() . '" not found on Nextcloud. Check setting json.');
 		}
 		$this->setConfig('owner', $owner);
-		return $this;
 	}
 
-	public function validateUsers(): self {
+	public function validateUsers() {
 		$this->getImportSystem()->validateUsers();
-		return $this;
 	}
 }

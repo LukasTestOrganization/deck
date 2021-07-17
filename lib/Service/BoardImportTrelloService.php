@@ -65,12 +65,9 @@ class BoardImportTrelloService extends ABoardImportService {
 		$this->l10n = $l10n;
 	}
 
-	/**
-	 * @return self
-	 */
-	public function validateUsers(): self {
+	public function validateUsers() {
 		if (empty($this->getImportService()->getConfig('uidRelation'))) {
-			return $this;
+			return;
 		}
 		foreach ($this->getImportService()->getConfig('uidRelation') as $trelloUid => $nextcloudUid) {
 			$user = array_filter($this->getImportService()->getData()->members, function ($u) use ($trelloUid) {
@@ -90,7 +87,6 @@ class BoardImportTrelloService extends ABoardImportService {
 			$user = current($user);
 			$this->members[$user->id] = $this->getImportService()->getConfig('uidRelation')->$trelloUid;
 		}
-		return $this;
 	}
 
 	/**
@@ -176,17 +172,13 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this->cards;
 	}
 
-	public function updateCard($id, Card $card): self {
+	public function updateCard($id, Card $card) {
 		$this->cards[$id] = $card;
-		return $this;
 	}
 
-	/**
-	 * @return self
-	 */
-	private function appendAttachmentsToDescription($trelloCard): self {
+	private function appendAttachmentsToDescription($trelloCard) {
 		if (empty($trelloCard->attachments)) {
-			return $this;
+			return;
 		}
 		$trelloCard->desc .= "\n\n## {$this->l10n->t('Attachments')}\n";
 		$trelloCard->desc .= "| {$this->l10n->t('File')} | {$this->l10n->t('date')} |\n";
@@ -195,10 +187,9 @@ class BoardImportTrelloService extends ABoardImportService {
 			$name = $attachment->name === $attachment->url ? null : $attachment->name;
 			$trelloCard->desc .= "| [{$name}]({$attachment->url}) | {$attachment->date} |\n";
 		}
-		return $this;
 	}
 
-	public function importParticipants(): self {
+	public function importParticipants() {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->idMembers as $idMember) {
 				if (empty($this->members[$idMember])) {
@@ -211,7 +202,6 @@ class BoardImportTrelloService extends ABoardImportService {
 				$this->getImportService()->insertAssignment($assignment);
 			}
 		}
-		return $this;
 	}
 
 	public function importComments() {
@@ -250,7 +240,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $text;
 	}
 
-	public function assignCardsToLabels(): self {
+	public function assignCardsToLabels() {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->labels as $label) {
 				$this->getImportService()->assignCardToLabel(
@@ -259,7 +249,6 @@ class BoardImportTrelloService extends ABoardImportService {
 				);
 			}
 		}
-		return $this;
 	}
 
 	/**
@@ -280,9 +269,8 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $return;
 	}
 
-	public function updateStack(string $id, Stack $stack): self {
+	public function updateStack(string $id, Stack $stack) {
 		$this->stacks[$id] = $stack;
-		return $this;
 	}
 
 	private function translateColor($color): string {

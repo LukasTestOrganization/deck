@@ -29,24 +29,23 @@ abstract class ABoardImportService {
 	 */
 	abstract public function getCards(): array;
 
-	abstract public function updateStack(string $id, Stack $stack): self;
+	abstract public function updateStack(string $id, Stack $stack);
 
-	abstract public function updateCard(string $id, Card $card): self;
+	abstract public function updateCard(string $id, Card $card);
 
-	abstract public function importParticipants(): self;
+	abstract public function importParticipants();
 
 	abstract public function importComments();
 
 	/** @return Label[] */
 	abstract public function importLabels(): array;
 
-	abstract public function assignCardsToLabels(): self;
+	abstract public function assignCardsToLabels();
 
-	abstract public function validateUsers(): self;
+	abstract public function validateUsers();
 
-	public function setImportService($service): self {
+	public function setImportService($service) {
 		$this->boardImportService = $service;
-		return $this;
 	}
 
 	public function getImportService(): BoardImportService {
