@@ -178,6 +178,9 @@ class BoardImportService {
 
 	public function getImportSystem(): ABoardImportService {
 		$systemClass = 'OCA\\Deck\\Service\\BoardImport' . ucfirst($this->getSystem()) . 'Service';
+		if (!$this->getSystem()) {
+			throw new NotFoundException('System to import not found');
+		}
 		if (!is_object($this->systemInstance)) {
 			$this->systemInstance = \OC::$server->get($systemClass);
 			$this->systemInstance->setImportService($this);
