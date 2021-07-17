@@ -116,15 +116,15 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 		$importService
 			->method('getData')
 			->willReturn(json_decode(
-				<<<JSON
-				{
-					"members": [
-						{
-							"username": "trello_user"
-						}
-					]
-				}
-				JSON
+<<<JSON
+{
+	"members": [
+		{
+			"username": "trello_user"
+		}
+	]
+}
+JSON
 			));
 		$this->service->setImportService($importService);
 		$actual = $this->service->validateUsers();
