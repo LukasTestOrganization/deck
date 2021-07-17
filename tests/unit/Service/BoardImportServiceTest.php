@@ -31,6 +31,7 @@ use OCA\Deck\Db\LabelMapper;
 use OCA\Deck\Db\StackMapper;
 use OCP\Comments\ICommentsManager;
 use OCP\IDBConnection;
+use OCP\IUser;
 use OCP\IUserManager;
 
 class BoardImportServiceTest extends \Test\TestCase {
@@ -83,8 +84,32 @@ class BoardImportServiceTest extends \Test\TestCase {
 		$importService
 			->method('getBoard')
 			->willReturn($board);
+		$this->boardImportService->setSystem('trello');
 		$this->boardImportService->setImportSystem($importService);
 		$actual = $this->boardImportService->import();
 		$this->assertNull($actual);
+	}
+
+	public function testImportBoard() {
+		$this->boardImportService->setSystem('trello');
+		$data = json_decode(file_get_contents(__DIR__ . '/../../data/data-trello.json'));
+		$this->boardImportService->setData($data);
+		$configInstance = json_decode(file_get_contents(__DIR__ . '/../../data/config-trello.json'));
+		$this->boardImportService->setConfigInstance($configInstance);
+
+		$owner = $this->createMock(IUser::class);
+		$owner
+			->method('getUID')
+			->willReturn('owner');
+		$this->userManager
+			->method('get')
+			->willReturn($owner);
+		$this->boardImportService->validateOwner();
+		$actual = $this->boardImportService->importBoard();
+		$this->assertNull($actual);
+		$board = $this->boardImportService->getBoard();
+		$this->assertEquals('Test Board Name', $board->getTitle());
+		$this->assertEquals('owner', $board->getOwner());
+		$this->assertEquals('0800fd', $board->getColor());
 	}
 }
