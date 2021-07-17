@@ -59,17 +59,7 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 			]);
 		$importService
 			->method('getData')
-			->willReturn(json_decode(
-				<<<JSON
-				{
-					"members": [
-						{
-							"username": "othre_trello_user"
-						}
-					]
-				}
-				JSON
-			));
+			->willReturn(json_decode('{"members": [{"username": "othre_trello_user"}]}'));
 		$this->service->setImportService($importService);
 		$actual = $this->service->validateUsers();
 		$this->assertInstanceOf(BoardImportTrelloService::class, $actual);
@@ -85,17 +75,7 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 			]);
 		$importService
 			->method('getData')
-			->willReturn(json_decode(
-				<<<JSON
-				{
-					"members": [
-						{
-							"username": "trello_user"
-						}
-					]
-				}
-				JSON
-			));
+			->willReturn(json_decode('{"members": [{"username": "trello_user"}]}'));
 		$this->service->setImportService($importService);
 		$actual = $this->service->validateUsers();
 		$this->assertInstanceOf(BoardImportTrelloService::class, $actual);
@@ -106,13 +86,7 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 		$importService = $this->createMock(BoardImportService::class);
 		$importService
 			->method('getConfig')
-			->willReturn(json_decode(
-				<<<JSON
-				{
-					"trello_user": "nextcloud_user"
-				}
-				JSON
-			));
+			->willReturn(json_decode('{"trello_user": "nextcloud_user"}'));
 		$importService
 			->method('getData')
 			->willReturn(json_decode('{"members": [{"username": "trello_user"}]}'));
@@ -131,7 +105,6 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 			->willReturn(json_decode('{"members": [{"id": "fakeid", "username": "trello_user"}]}'));
 		$fakeUser = $this->createMock(IUser::class);
 		$this->userManager
-			// ->expects($this->once())
 			->method('get')
 			->with('nextcloud_user')
 			->willReturn($fakeUser);
