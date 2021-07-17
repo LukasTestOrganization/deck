@@ -302,7 +302,7 @@ class BoardImportTrelloService extends ABoardImportService {
 
 	public function getBoard(): Board {
 		$board = new Board();
-		if (!$this->getImportService()->getData()->name) {
+		if (empty($this->getImportService()->getData()->name)) {
 			throw new BadRequestException('Invalid name of board');
 		}
 		$board->setTitle($this->getImportService()->getData()->name);

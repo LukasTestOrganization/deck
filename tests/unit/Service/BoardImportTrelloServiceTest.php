@@ -22,6 +22,7 @@
  */
 namespace OCA\Deck\Service;
 
+use OCA\Deck\Db\Board;
 use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -111,5 +112,41 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 		$this->service->setImportService($importService);
 		$actual = $this->service->validateUsers();
 		$this->assertNull($actual);
+	}
+
+	public function testGetBoardWithSuccess() {
+		$importService = $this->createMock(BoardImportService::class);
+		$owner = $this->createMock(IUser::class);
+		$owner
+			->method('getUID')
+			->willReturn('owner');
+		$importService
+			->method('getConfig')
+			->withConsecutive(
+				['owner'],
+				['color']
+			)->willReturnonConsecutiveCalls(
+				$owner,
+				'000000'
+			);
+		$importService
+			->method('getData')
+			->willReturn(json_decode('{"name": "test"}'));
+		$this->service->setImportService($importService);
+		$actual = $this->service->getBoard();
+		$this->assertInstanceOf(Board::class, $actual);
+		$this->assertEquals('test', $actual->getTitle());
+		$this->assertEquals('owner', $actual->getOwner());
+		$this->assertEquals('000000', $actual->getColor());
+	}
+
+	public function testGetBoardWithInvalidName() {
+		$this->expectErrorMessage('Invalid name of board');
+		$importService = $this->createMock(BoardImportService::class);
+		$importService
+			->method('getData')
+			->willReturn(new \stdClass);
+		$this->service->setImportService($importService);
+		$this->service->getBoard();
 	}
 }
