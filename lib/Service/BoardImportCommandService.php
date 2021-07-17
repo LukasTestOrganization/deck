@@ -121,7 +121,7 @@ class BoardImportCommandService extends BoardImportService {
 		return;
 	}
 
-	protected function validateSystem() {
+	public function validateSystem() {
 		try {
 			parent::validateSystem();
 			return;
