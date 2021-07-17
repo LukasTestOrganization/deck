@@ -32,18 +32,21 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 
 class BoardImportCommandService extends BoardImportService {
-	/** @var Command */
-	private $command;
-	/** @var InputInterface */
-	private $input;
-	/** @var OutputInterface */
-	private $output;
 	/**
-	 * Data object created from config JSON
-	 *
-	 * @var \stdClass
+	 * @var Command
+	 * @psalm-suppress PropertyNotSetInConstructor
 	 */
-	public $config;
+	private $command;
+	/**
+	 * @var InputInterface
+	 * @psalm-suppress PropertyNotSetInConstructor
+	 */
+	private $input;
+	/**
+	 * @var OutputInterface
+	 * @psalm-suppress PropertyNotSetInConstructor
+	 */
+	private $output;
 
 	/**
 	 * Define Command instance

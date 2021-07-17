@@ -67,7 +67,7 @@ class BoardImportService {
 	private $commentsManager;
 	/** @var string */
 	private $system = '';
-	/** @var ABoardImportService */
+	/** @var null|ABoardImportService */
 	private $systemInstance;
 	/** @var string[] */
 	private $allowedSystems = [];
@@ -75,15 +75,20 @@ class BoardImportService {
 	 * Data object created from config JSON
 	 *
 	 * @var \stdClass
+	 * @psalm-suppress PropertyNotSetInConstructor
 	 */
 	public $config;
 	/**
 	 * Data object created from JSON of origin system
 	 *
 	 * @var \stdClass
+	 * @psalm-suppress PropertyNotSetInConstructor
 	 */
 	private $data;
-	/** @var Board */
+	/**
+	 * @var Board
+	 * @psalm-suppress PropertyNotSetInConstructor
+	 */
 	private $board;
 
 	public function __construct(
@@ -106,6 +111,7 @@ class BoardImportService {
 		$this->cardMapper = $cardMapper;
 		$this->assignmentMapper = $assignmentMapper;
 		$this->commentsManager = $commentsManager;
+		$this->setData(new \stdClass());
 	}
 
 	public function import(): void {
@@ -318,9 +324,8 @@ class BoardImportService {
 		$this->getImportSystem()->importParticipants();
 	}
 
-	public function setData(\stdClass $data): self {
+	final public function setData(\stdClass $data): void {
 		$this->data = $data;
-		return $this;
 	}
 
 	public function getData(): \stdClass {
@@ -332,14 +337,13 @@ class BoardImportService {
 	 *
 	 * @param string $configName
 	 * @param mixed $value
-	 * @return self
+	 * @return void
 	 */
-	public function setConfig(string $configName, $value): self {
+	public function setConfig(string $configName, $value): void {
 		if (empty((array) $this->config)) {
 			$this->setConfigInstance(new \stdClass);
 		}
 		$this->config->$configName = $value;
-		return $this;
 	}
 
 	/**
@@ -349,9 +353,6 @@ class BoardImportService {
 	 * @return mixed
 	 */
 	public function getConfig(string $configName = null) {
-		if (!$configName) {
-			return $this->config;
-		}
 		if (!property_exists($this->config, $configName)) {
 			return;
 		}
@@ -376,8 +377,12 @@ class BoardImportService {
 		return $this;
 	}
 
+	public function getConfigInstance(): \stdClass {
+		return $this->config;
+	}
+
 	protected function validateConfig(): void {
-		$config = $this->getConfig();
+		$config = $this->getConfigInstance();
 		$schemaPath = $this->getJsonSchemaPath();
 		$validator = new Validator();
 		$newConfig = clone $config;
