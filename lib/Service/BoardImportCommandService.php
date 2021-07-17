@@ -63,7 +63,7 @@ class BoardImportCommandService extends BoardImportService {
 		return $this->command;
 	}
 
-	public function setInput($input): self {
+	public function setInput(InputInterface $input): self {
 		$this->input = $input;
 		return $this;
 	}
@@ -72,7 +72,7 @@ class BoardImportCommandService extends BoardImportService {
 		return $this->input;
 	}
 
-	public function setOutput($output): self {
+	public function setOutput(OutputInterface $output): self {
 		$this->output = $output;
 		return $this;
 	}
@@ -96,7 +96,7 @@ class BoardImportCommandService extends BoardImportService {
 				'Please inform a valid config json file: ',
 				'config.json'
 			);
-			$question->setValidator(function ($answer) {
+			$question->setValidator(function (string $answer) {
 				if (!is_file($answer)) {
 					throw new \RuntimeException(
 						'config file not found'
@@ -108,7 +108,7 @@ class BoardImportCommandService extends BoardImportService {
 			$this->setConfigInstance($configFile);
 		} catch (ConflictException $e) {
 			$this->getOutput()->writeln('<error>Invalid config file</error>');
-			$this->getOutput()->writeln(array_map(function ($v) {
+			$this->getOutput()->writeln(array_map(function (array $v) {
 				return $v['message'];
 			}, $e->getData()));
 			$this->getOutput()->writeln('Valid schema:');
@@ -148,7 +148,7 @@ class BoardImportCommandService extends BoardImportService {
 				'Please inform a valid data json file: ',
 				'data.json'
 			);
-			$question->setValidator(function ($answer) {
+			$question->setValidator(function (string $answer) {
 				if (!is_file($answer)) {
 					throw new \RuntimeException(
 						'Data file not found'

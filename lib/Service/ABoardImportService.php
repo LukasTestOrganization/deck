@@ -44,7 +44,7 @@ abstract class ABoardImportService {
 
 	abstract public function validateUsers();
 
-	public function setImportService($service) {
+	public function setImportService(BoardImportService $service) {
 		$this->boardImportService = $service;
 	}
 

@@ -36,10 +36,10 @@ class BoardImportApiController extends ApiController {
 	private $userId;
 
 	public function __construct(
-		$appName,
+		string $appName,
 		IRequest $request,
 		BoardImportService $boardImportService,
-		$userId
+		string $userId
 	) {
 		parent::__construct($appName, $request);
 		$this->boardImportService = $boardImportService;
@@ -51,7 +51,7 @@ class BoardImportApiController extends ApiController {
 	 * @CORS
 	 * @NoCSRFRequired
 	 */
-	public function import($system, $config, $data) {
+	public function import(string $system, array $config, array $data) {
 		$this->boardImportService->setSystem($system);
 		$config = json_decode(json_encode($config));
 		$config->owner = $this->userId;
@@ -77,7 +77,7 @@ class BoardImportApiController extends ApiController {
 	 * @CORS
 	 * @NoCSRFRequired
 	 */
-	public function getConfigSchema($name) {
+	public function getConfigSchema(string $name) {
 		$this->boardImportService->setSystem($name);
 		$this->boardImportService->validateSystem();
 		$jsonSchemaPath = json_decode(file_get_contents($this->boardImportService->getJsonSchemaPath()));

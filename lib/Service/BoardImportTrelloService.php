@@ -70,7 +70,7 @@ class BoardImportTrelloService extends ABoardImportService {
 			return;
 		}
 		foreach ($this->getImportService()->getConfig('uidRelation') as $trelloUid => $nextcloudUid) {
-			$user = array_filter($this->getImportService()->getData()->members, function ($u) use ($trelloUid) {
+			$user = array_filter($this->getImportService()->getData()->members, function (\stdClass $u) use ($trelloUid) {
 				return $u->username === $trelloUid;
 			});
 			if (!$user) {
@@ -110,7 +110,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $return;
 	}
 
-	private function checklistItem($item): string {
+	private function checklistItem(\stdClass $item): string {
 		if (($item->state == 'incomplete')) {
 			$string_start = '- [ ]';
 		} else {
@@ -120,7 +120,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $check_item_string;
 	}
 
-	private function formulateChecklistText($checklist): string {
+	private function formulateChecklistText(\stdClass $checklist): string {
 		$checklist_string = "\n\n## {$checklist->name}\n";
 		foreach ($checklist->checkItems as $item) {
 			$checklist_item_string = $this->checklistItem($item);
@@ -172,11 +172,11 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this->cards;
 	}
 
-	public function updateCard($id, Card $card) {
+	public function updateCard(string $id, Card $card) {
 		$this->cards[$id] = $card;
 	}
 
-	private function appendAttachmentsToDescription($trelloCard) {
+	private function appendAttachmentsToDescription(\stdClass $trelloCard) {
 		if (empty($trelloCard->attachments)) {
 			return;
 		}
@@ -208,7 +208,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			$comments = array_filter(
 				$this->getImportService()->getData()->actions,
-				function ($a) use ($trelloCard) {
+				function (\stdClass $a) use ($trelloCard) {
 					return $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id;
 				}
 			);
@@ -226,14 +226,14 @@ class BoardImportTrelloService extends ABoardImportService {
 						\DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloComment->date)
 					);
 				$this->getImportService()->insertComment(
-					$this->cards[$trelloCard->id]->getId(),
+					(string) $this->cards[$trelloCard->id]->getId(),
 					$comment
 				);
 			}
 		}
 	}
 
-	private function replaceUsernames($text) {
+	private function replaceUsernames(string $text) {
 		foreach ($this->getImportService()->getConfig('uidRelation') as $trello => $nextcloud) {
 			$text = str_replace($trello, $nextcloud->getUID(), $text);
 		}
@@ -273,7 +273,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		$this->stacks[$id] = $stack;
 	}
 
-	private function translateColor($color): string {
+	private function translateColor(string $color): string {
 		switch ($color) {
 			case 'red':
 				return 'ff0000';

@@ -30,7 +30,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class BoardImport extends Command {
-	/** @var boardImportCommandService */
+	/** @var BoardImportCommandService */
 	private $boardImportCommandService;
 
 	public function __construct(
@@ -81,7 +81,7 @@ class BoardImport extends Command {
 		$this->boardImportCommandService
 			->setInput($input)
 			->setOutput($output)
-			->setSystem($input->getOption('system'))
+			->setSystem((string) $input->getOption('system'))
 			->setConfigInstance($input->getOption('config'))
 			->validate();
 	}

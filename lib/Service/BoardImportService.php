@@ -25,9 +25,11 @@ namespace OCA\Deck\Service;
 
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
+use OC\Comments\Comment;
 use OCA\Deck\AppInfo\Application;
 use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\AclMapper;
+use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\BoardMapper;
@@ -144,7 +146,7 @@ class BoardImportService {
 	public function getAllowedImportSystems(): array {
 		if (!$this->allowedSystems) {
 			$allowedSystems = glob(__DIR__ . '/BoardImport*Service.php');
-			$allowedSystems = array_filter($allowedSystems, function ($name) {
+			$allowedSystems = array_filter($allowedSystems, function (string $name) {
 				$name = basename($name);
 				switch ($name) {
 					case 'ABoardImportService.php':
@@ -173,11 +175,11 @@ class BoardImportService {
 		return $this->systemInstance;
 	}
 
-	public function setImportSystem($instance) {
+	public function setImportSystem(ABoardImportService $instance) {
 		$this->systemInstance = $instance;
 	}
 
-	public function insertAssignment($assignment): self {
+	public function insertAssignment(Assignment $assignment): self {
 		$this->assignmentMapper->insert($assignment);
 		return $this;
 	}
@@ -210,7 +212,7 @@ class BoardImportService {
 		return $labels;
 	}
 
-	public function createLabel($title, $color, $boardId): Label {
+	public function createLabel(string $title, string $color, int $boardId): Label {
 		$label = new Label();
 		$label->setTitle($title);
 		$label->setColor($color);
@@ -240,6 +242,11 @@ class BoardImportService {
 		return $this;
 	}
 
+	/**
+	 * @param mixed $cardId
+	 * @param mixed $labelId
+	 * @return self
+	 */
 	public function assignCardToLabel($cardId, $labelId): self {
 		$this->cardMapper->assignLabel(
 			$cardId,
@@ -257,8 +264,8 @@ class BoardImportService {
 		return $this;
 	}
 
-	public function insertComment($cardId, $comment) {
-		$comment->setObject('deckCard', (string) $cardId);
+	public function insertComment(string $cardId, Comment $comment) {
+		$comment->setObject('deckCard', $cardId);
 		$comment->setVerb('comment');
 		// Check if parent is a comment on the same card
 		if ($comment->getParentId() !== '0') {
@@ -349,6 +356,10 @@ class BoardImportService {
 		return $this->config->$configName;
 	}
 
+	/**
+	 * @param mixed $config
+	 * @return self
+	 */
 	public function setConfigInstance($config): self {
 		$this->config = $config;
 		return $this;
