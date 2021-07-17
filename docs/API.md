@@ -991,6 +991,23 @@ For now only `deck_file` is supported as an attachment type.
 
 #### Request parameters
 
+| Parameter    | Type    | Description                                   |
+| ------------ | ------- | --------------------------------------------- |
+| system       | Integer | The system name. Example: trello              |
+
+#### Response
+
+Make a request to see the json schema of system
+
+```json
+{
+}
+```
+
+### GET /boards/import/config/system/{schema} - Import a board
+
+#### Request parameters
+
 #### Response
 
 ```json

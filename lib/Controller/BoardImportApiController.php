@@ -71,4 +71,16 @@ class BoardImportApiController extends ApiController {
 		$allowedSystems = $this->boardImportService->getAllowedImportSystems();
 		return new DataResponse($allowedSystems, Http::STATUS_OK);
 	}
+
+	/**
+	 * @NoAdminRequired
+	 * @CORS
+	 * @NoCSRFRequired
+	 */
+	public function getConfigSchema($name) {
+		$this->boardImportService->setSystem($name);
+		$this->boardImportService->validateSystem();
+		$jsonSchemaPath = json_decode(file_get_contents($this->boardImportService->getJsonSchemaPath()));
+		return new DataResponse($jsonSchemaPath, Http::STATUS_OK);
+	}
 }
