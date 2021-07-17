@@ -46,7 +46,7 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 		$importService = $this->createMock(BoardImportService::class);
 		$this->service->setImportService($importService);
 		$actual = $this->service->validateUsers();
-		$this->assertInstanceOf(BoardImportTrelloService::class, $actual);
+		$this->assertNull($actual);
 	}
 
 	public function testValidateUsersWithInvalidUser() {
@@ -110,6 +110,6 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 			->willReturn($fakeUser);
 		$this->service->setImportService($importService);
 		$actual = $this->service->validateUsers();
-		$this->assertInstanceOf(BoardImportTrelloService::class, $actual);
+		$this->assertNull($actual);
 	}
 }

@@ -68,9 +68,9 @@ class BoardImportTrelloService extends ABoardImportService {
 	/**
 	 * @return self
 	 */
-	public function validateUsers(): self {
+	public function validateUsers() {
 		if (empty($this->getImportService()->getConfig('uidRelation'))) {
-			return $this;
+			return;
 		}
 		foreach ($this->getImportService()->getConfig('uidRelation') as $trelloUid => $nextcloudUid) {
 			$user = array_filter($this->getImportService()->getData()->members, function ($u) use ($trelloUid) {
@@ -90,7 +90,6 @@ class BoardImportTrelloService extends ABoardImportService {
 			$user = current($user);
 			$this->members[$user->id] = $this->getImportService()->getConfig('uidRelation')->$trelloUid;
 		}
-		return $this;
 	}
 
 	/**
@@ -176,9 +175,8 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this->cards;
 	}
 
-	public function updateCard($id, Card $card): self {
+	public function updateCard($id, Card $card) {
 		$this->cards[$id] = $card;
-		return $this;
 	}
 
 	/**
@@ -250,7 +248,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $text;
 	}
 
-	public function assignCardsToLabels(): self {
+	public function assignCardsToLabels() {
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->labels as $label) {
 				$this->getImportService()->assignCardToLabel(
@@ -259,7 +257,6 @@ class BoardImportTrelloService extends ABoardImportService {
 				);
 			}
 		}
-		return $this;
 	}
 
 	/**
@@ -280,9 +277,8 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $return;
 	}
 
-	public function updateStack(string $id, Stack $stack): self {
+	public function updateStack(string $id, Stack $stack) {
 		$this->stacks[$id] = $stack;
-		return $this;
 	}
 
 	private function translateColor($color): string {
