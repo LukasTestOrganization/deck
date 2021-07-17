@@ -279,7 +279,7 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $return;
 	}
 
-	public function updateStack($id, $stack): self {
+	public function updateStack(string $id, Stack $stack): self {
 		$this->stacks[$id] = $stack;
 		return $this;
 	}
