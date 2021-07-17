@@ -82,6 +82,7 @@ class BoardImportTrelloService extends ABoardImportService {
 			if (!is_string($nextcloudUid) && !is_numeric($nextcloudUid)) {
 				throw new \LogicException('User on setting uidRelation is invalid');
 			}
+			$nextcloudUid = (string) $nextcloudUid;
 			$this->getImportService()->getConfig('uidRelation')->$trelloUid = $this->userManager->get($nextcloudUid);
 			if (!$this->getImportService()->getConfig('uidRelation')->$trelloUid) {
 				throw new \LogicException('User on setting uidRelation not found: ' . $nextcloudUid);
