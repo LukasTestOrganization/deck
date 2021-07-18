@@ -357,19 +357,10 @@ class BoardImportService {
 	}
 
 	/**
-	 * @param mixed $config
+	 * @param \stdClass $config
 	 * @return self
 	 */
 	public function setConfigInstance($config): self {
-		if (is_string($config)) {
-			if (!is_file($config)) {
-				throw new NotFoundException('Please inform a valid config json file');
-			}
-			$config = json_decode(file_get_contents($config));
-			if (!is_object($config)) {
-				throw new NotFoundException('Please inform a valid config json file');
-			}
-		}
 		$this->config = $config;
 		return $this;
 	}
@@ -407,9 +398,13 @@ class BoardImportService {
 		$this->setConfig('owner', $owner);
 	}
 
+	protected function validateData(): void {
+	}
+
 	public function bootstrap(): void {
 		$this->validateSystem();
 		$this->validateConfig();
+		$this->validateData();
 		$this->getImportSystem()->bootstrap();
 	}
 }

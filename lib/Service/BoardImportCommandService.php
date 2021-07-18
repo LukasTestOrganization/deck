@@ -77,6 +77,17 @@ class BoardImportCommandService extends BoardImportService {
 
 	protected function validateConfig(): void {
 		try {
+			$config = $this->getInput()->getOption('config');
+			if (is_string($config)) {
+				if (!is_file($config)) {
+					throw new NotFoundException('Please inform a valid config json file');
+				}
+				$config = json_decode(file_get_contents($config));
+				if (!$config instanceof \stdClass) {
+					throw new NotFoundException('Please inform a valid config json file');
+				}
+				$this->setConfigInstance($config);
+			}
 			parent::validateConfig();
 			return;
 		} catch (NotFoundException $e) {
@@ -94,7 +105,7 @@ class BoardImportCommandService extends BoardImportService {
 				return $answer;
 			});
 			$configFile = $helper->ask($this->getInput(), $this->getOutput(), $question);
-			$this->setConfigInstance($configFile);
+			$config = $this->getInput()->setOption('config', $configFile);
 		} catch (ConflictException $e) {
 			$this->getOutput()->writeln('<error>Invalid config file</error>');
 			$this->getOutput()->writeln(array_map(function (array $v): string {
@@ -104,7 +115,6 @@ class BoardImportCommandService extends BoardImportService {
 			$schemaPath = __DIR__ . '/fixtures/config-' . $this->getSystem() . '-schema.json';
 			$this->getOutput()->writeln(print_r(file_get_contents($schemaPath), true));
 			$this->getInput()->setOption('config', null);
-			$this->setConfigInstance('');
 		}
 		parent::validateConfig();
 		return;
@@ -158,8 +168,6 @@ class BoardImportCommandService extends BoardImportService {
 
 	public function bootstrap(): void {
 		$this->setSystem($this->getInput()->getOption('system'));
-		$this->setConfigInstance($this->getInput()->getOption('config'));
-		$this->validateData();
 		parent::bootstrap();
 	}
 
