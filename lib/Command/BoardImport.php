@@ -73,20 +73,6 @@ class BoardImport extends Command {
 	}
 
 	/**
-	 * @inheritDoc
-	 *
-	 * @return void
-	 */
-	protected function interact(InputInterface $input, OutputInterface $output) {
-		$this->boardImportCommandService
-			->setInput($input)
-			->setOutput($output)
-			->setSystem($input->getOption('system'))
-			->setConfigInstance($input->getOption('config'))
-			->validate();
-	}
-
-	/**
 	 * @param InputInterface $input
 	 * @param OutputInterface $output
 	 *
@@ -97,6 +83,7 @@ class BoardImport extends Command {
 			->boardImportCommandService
 			->setInput($input)
 			->setOutput($output)
+			->setCommand($this)
 			->import();
 		$output->writeln('Done!');
 		return 0;

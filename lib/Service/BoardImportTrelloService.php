@@ -66,6 +66,10 @@ class BoardImportTrelloService extends ABoardImportService {
 		$this->l10n = $l10n;
 	}
 
+	public function bootstrap(): void {
+		$this->validateUsers();
+	}
+
 	public function validateUsers(): void {
 		if (empty($this->getImportService()->getConfig('uidRelation'))) {
 			return;

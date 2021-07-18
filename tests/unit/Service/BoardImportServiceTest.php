@@ -76,6 +76,11 @@ class BoardImportServiceTest extends \Test\TestCase {
 			$this->assignmentMapper,
 			$this->commentsManager
 		);
+		$this->boardImportService->setSystem('trello');
+		$data = json_decode(file_get_contents(__DIR__ . '/../../data/data-trello.json'));
+		$this->boardImportService->setData($data);
+		$configInstance = json_decode(file_get_contents(__DIR__ . '/../../data/config-trello.json'));
+		$this->boardImportService->setConfigInstance($configInstance);
 	}
 
 	public function testImportSuccess() {
@@ -91,12 +96,6 @@ class BoardImportServiceTest extends \Test\TestCase {
 	}
 
 	public function testImportBoard() {
-		$this->boardImportService->setSystem('trello');
-		$data = json_decode(file_get_contents(__DIR__ . '/../../data/data-trello.json'));
-		$this->boardImportService->setData($data);
-		$configInstance = json_decode(file_get_contents(__DIR__ . '/../../data/config-trello.json'));
-		$this->boardImportService->setConfigInstance($configInstance);
-
 		$owner = $this->createMock(IUser::class);
 		$owner
 			->method('getUID')
@@ -111,5 +110,10 @@ class BoardImportServiceTest extends \Test\TestCase {
 		$this->assertEquals('Test Board Name', $board->getTitle());
 		$this->assertEquals('owner', $board->getOwner());
 		$this->assertEquals('0800fd', $board->getColor());
+	}
+
+	public function testImportAcl() {
+		$actual = $this->boardImportService->importAcl();
+		$this->assertNull($actual);
 	}
 }

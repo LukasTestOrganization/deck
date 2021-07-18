@@ -111,10 +111,10 @@ class BoardImportService {
 		$this->cardMapper = $cardMapper;
 		$this->assignmentMapper = $assignmentMapper;
 		$this->commentsManager = $commentsManager;
-		$this->setData(new \stdClass());
 	}
 
 	public function import(): void {
+		$this->bootstrap();
 		try {
 			$this->importBoard();
 			$this->importAcl();
@@ -127,12 +127,6 @@ class BoardImportService {
 		} catch (\Throwable $th) {
 			throw new BadRequestException($th->getMessage());
 		}
-	}
-
-	public function validate(): void {
-		$this->validateSystem();
-		$this->validateConfig();
-		$this->validateUsers();
 	}
 
 	public function validateSystem(): void {
@@ -327,7 +321,7 @@ class BoardImportService {
 		$this->getImportSystem()->importParticipants();
 	}
 
-	final public function setData(\stdClass $data): void {
+	public function setData(\stdClass $data): void {
 		$this->data = $data;
 	}
 
@@ -355,7 +349,7 @@ class BoardImportService {
 	 * @param string $configName config name
 	 * @return mixed
 	 */
-	public function getConfig(string $configName = null) {
+	public function getConfig(string $configName) {
 		if (!property_exists($this->config, $configName)) {
 			return;
 		}
@@ -413,7 +407,9 @@ class BoardImportService {
 		$this->setConfig('owner', $owner);
 	}
 
-	public function validateUsers(): void {
-		$this->getImportSystem()->validateUsers();
+	public function bootstrap(): void {
+		$this->validateSystem();
+		$this->validateConfig();
+		$this->getImportSystem()->bootstrap();
 	}
 }

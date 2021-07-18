@@ -63,7 +63,12 @@ abstract class ABoardImportService {
 
 	abstract public function assignCardsToLabels(): void;
 
-	abstract public function validateUsers(): void;
+	/**
+	 * Configure import service
+	 *
+	 * @return void
+	 */
+	abstract public function bootstrap(): void;
 
 	public function setImportService(BoardImportService $service): void {
 		$this->boardImportService = $service;

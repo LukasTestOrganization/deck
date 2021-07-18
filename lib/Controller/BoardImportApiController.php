@@ -57,7 +57,6 @@ class BoardImportApiController extends ApiController {
 		$config->owner = $this->userId;
 		$this->boardImportService->setConfigInstance($config);
 		$this->boardImportService->setData(json_decode(json_encode($data)));
-		$this->boardImportService->validate();
 		$this->boardImportService->import();
 		return new DataResponse($this->boardImportService->getBoard(), Http::STATUS_OK);
 	}
