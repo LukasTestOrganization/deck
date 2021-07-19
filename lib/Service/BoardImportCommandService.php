@@ -114,10 +114,9 @@ class BoardImportCommandService extends BoardImportService {
 			$this->getOutput()->writeln('Valid schema:');
 			$schemaPath = __DIR__ . '/fixtures/config-' . $this->getSystem() . '-schema.json';
 			$this->getOutput()->writeln(print_r(file_get_contents($schemaPath), true));
-			$this->getInput()->setOption('config', null);
+			$this->getInput()->setOption('config', '');
 		}
-		parent::validateConfig();
-		return;
+		$this->validateConfig();
 	}
 
 	public function validateSystem(): void {
