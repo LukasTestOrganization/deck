@@ -50,6 +50,13 @@ abstract class ABoardImportService {
 	/** @var string[][] */
 	protected $labelCardAssignments = [];
 
+	/**
+	 * Configure import service
+	 *
+	 * @return void
+	 */
+	abstract public function bootstrap(): void;
+
 	abstract public function getBoard(): ?Board;
 
 	/**
@@ -79,12 +86,7 @@ abstract class ABoardImportService {
 	/** @return Label[] */
 	abstract public function getLabels(): array;
 
-	/**
-	 * Configure import service
-	 *
-	 * @return void
-	 */
-	abstract public function bootstrap(): void;
+	abstract public function validateUsers(): void;
 
 	public function updateStack(string $id, Stack $stack): void {
 		$this->stacks[$id] = $stack;

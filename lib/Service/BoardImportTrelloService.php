@@ -79,38 +79,6 @@ class BoardImportTrelloService extends ABoardImportService {
 		}
 	}
 
-	private function checklistItem(\stdClass $item): string {
-		if (($item->state == 'incomplete')) {
-			$string_start = '- [ ]';
-		} else {
-			$string_start = '- [x]';
-		}
-		$check_item_string = $string_start . ' ' . $item->name . "\n";
-		return $check_item_string;
-	}
-
-	private function formulateChecklistText(\stdClass $checklist): string {
-		$checklist_string = "\n\n## {$checklist->name}\n";
-		foreach ($checklist->checkItems as $item) {
-			$checklist_item_string = $this->checklistItem($item);
-			$checklist_string = $checklist_string . "\n" . $checklist_item_string;
-		}
-		return $checklist_string;
-	}
-
-	private function appendAttachmentsToDescription(\stdClass $trelloCard): void {
-		if (empty($trelloCard->attachments)) {
-			return;
-		}
-		$trelloCard->desc .= "\n\n## {$this->l10n->t('Attachments')}\n";
-		$trelloCard->desc .= "| {$this->l10n->t('File')} | {$this->l10n->t('date')} |\n";
-		$trelloCard->desc .= "|---|---\n";
-		foreach ($trelloCard->attachments as $attachment) {
-			$name = $attachment->name === $attachment->url ? null : $attachment->name;
-			$trelloCard->desc .= "| [{$name}]({$attachment->url}) | {$attachment->date} |\n";
-		}
-	}
-
 	public function getCardAssignments(): array {
 		$assignments = [];
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
@@ -161,13 +129,6 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $comments;
 	}
 
-	private function replaceUsernames(string $text): string {
-		foreach ($this->getImportService()->getConfig('uidRelation') as $trello => $nextcloud) {
-			$text = str_replace($trello, $nextcloud->getUID(), $text);
-		}
-		return $text;
-	}
-
 	public function getCardLabelAssignment(): array {
 		$cardsLabels = [];
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
@@ -178,33 +139,6 @@ class BoardImportTrelloService extends ABoardImportService {
 			}
 		}
 		return $cardsLabels;
-	}
-
-	private function translateColor(string $color): string {
-		switch ($color) {
-			case 'red':
-				return 'ff0000';
-			case 'yellow':
-				return 'ffff00';
-			case 'orange':
-				return 'ff6600';
-			case 'green':
-				return '00ff00';
-			case 'purple':
-				return '9900ff';
-			case 'blue':
-				return '0000ff';
-			case 'sky':
-				return '00ccff';
-			case 'lime':
-				return '00ff99';
-			case 'pink':
-				return 'ff66cc';
-			case 'black':
-				return '000000';
-			default:
-				return 'ffffff';
-		}
 	}
 
 	public function getBoard(): Board {
@@ -317,5 +251,71 @@ class BoardImportTrelloService extends ABoardImportService {
 			$return[] = $acl;
 		}
 		return $return;
+	}
+
+	private function translateColor(string $color): string {
+		switch ($color) {
+			case 'red':
+				return 'ff0000';
+			case 'yellow':
+				return 'ffff00';
+			case 'orange':
+				return 'ff6600';
+			case 'green':
+				return '00ff00';
+			case 'purple':
+				return '9900ff';
+			case 'blue':
+				return '0000ff';
+			case 'sky':
+				return '00ccff';
+			case 'lime':
+				return '00ff99';
+			case 'pink':
+				return 'ff66cc';
+			case 'black':
+				return '000000';
+			default:
+				return 'ffffff';
+		}
+	}
+
+	private function replaceUsernames(string $text): string {
+		foreach ($this->getImportService()->getConfig('uidRelation') as $trello => $nextcloud) {
+			$text = str_replace($trello, $nextcloud->getUID(), $text);
+		}
+		return $text;
+	}
+
+	private function checklistItem(\stdClass $item): string {
+		if (($item->state == 'incomplete')) {
+			$string_start = '- [ ]';
+		} else {
+			$string_start = '- [x]';
+		}
+		$check_item_string = $string_start . ' ' . $item->name . "\n";
+		return $check_item_string;
+	}
+
+	private function formulateChecklistText(\stdClass $checklist): string {
+		$checklist_string = "\n\n## {$checklist->name}\n";
+		foreach ($checklist->checkItems as $item) {
+			$checklist_item_string = $this->checklistItem($item);
+			$checklist_string = $checklist_string . "\n" . $checklist_item_string;
+		}
+		return $checklist_string;
+	}
+
+	private function appendAttachmentsToDescription(\stdClass $trelloCard): void {
+		if (empty($trelloCard->attachments)) {
+			return;
+		}
+		$trelloCard->desc .= "\n\n## {$this->l10n->t('Attachments')}\n";
+		$trelloCard->desc .= "| {$this->l10n->t('File')} | {$this->l10n->t('date')} |\n";
+		$trelloCard->desc .= "|---|---\n";
+		foreach ($trelloCard->attachments as $attachment) {
+			$name = $attachment->name === $attachment->url ? null : $attachment->name;
+			$trelloCard->desc .= "| [{$name}]({$attachment->url}) | {$attachment->date} |\n";
+		}
 	}
 }
