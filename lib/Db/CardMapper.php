@@ -25,6 +25,7 @@ namespace OCA\Deck\Db;
 
 use DateTime;
 use Exception;
+use OC\Cache\CappedMemoryCache;
 use OCA\Deck\AppInfo\Application;
 use OCA\Deck\Search\Query\SearchQuery;
 use OCP\AppFramework\Db\Entity;
@@ -49,6 +50,8 @@ class CardMapper extends QBMapper implements IPermissionMapper {
 	private $databaseType;
 	private $database4ByteSupport;
 
+	private $cardBoardCache;
+
 	public function __construct(
 		IDBConnection $db,
 		LabelMapper $labelMapper,
@@ -65,6 +68,7 @@ class CardMapper extends QBMapper implements IPermissionMapper {
 		$this->notificationManager = $notificationManager;
 		$this->databaseType = $databaseType;
 		$this->database4ByteSupport = $database4ByteSupport;
+		$this->cardBoardCache = new CappedMemoryCache();
 	}
 
 	public function insert(Entity $entity): Entity {
@@ -547,11 +551,14 @@ class CardMapper extends QBMapper implements IPermissionMapper {
 	}
 
 	public function findBoardId($id): ?int {
-		$sql = 'SELECT id FROM `*PREFIX*deck_boards` WHERE `id` IN (SELECT board_id FROM `*PREFIX*deck_stacks` WHERE id IN (SELECT stack_id FROM `*PREFIX*deck_cards` WHERE id = ?))';
-		$stmt = $this->db->prepare($sql);
-		$stmt->bindParam(1, $id, \PDO::PARAM_INT);
-		$stmt->execute();
-		return $stmt->fetchColumn() ?? null;
+		if (!isset($this->cardBoardCache[$id])) {
+			$sql = 'SELECT id FROM `*PREFIX*deck_boards` WHERE `id` IN (SELECT board_id FROM `*PREFIX*deck_stacks` WHERE id IN (SELECT stack_id FROM `*PREFIX*deck_cards` WHERE id = ?))';
+			$stmt = $this->db->prepare($sql);
+			$stmt->bindParam(1, $id, \PDO::PARAM_INT);
+			$stmt->execute();
+			$this->cardBoardCache[$id] = $stmt->fetchColumn() ?? null;
+		}
+		return $this->cardBoardCache[$id];
 	}
 
 	public function mapOwner(Card &$card) {
