@@ -22,7 +22,6 @@
  */
 namespace OCA\Deck\Service;
 
-use OCA\Deck\Db\Board;
 use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -114,39 +113,32 @@ class BoardImportTrelloServiceTest extends \Test\TestCase {
 		$this->assertNull($actual);
 	}
 
-	public function testGetBoardWithSuccess() {
+	public function testGetBoardWithNoName() {
+		$this->expectErrorMessage('Invalid name of board');
 		$importService = $this->createMock(BoardImportService::class);
+		$this->service->setImportService($importService);
+		$this->service->getBoard();
+	}
+
+	public function testGetBoardWithSuccess() {
+		$importService = \OC::$server->get(BoardImportService::class);
+
+		$data = json_decode(file_get_contents(__DIR__ . '/../../data/data-trello.json'));
+		$importService->setData($data);
+
+		$configInstance = json_decode(file_get_contents(__DIR__ . '/../../data/config-trello.json'));
+		$importService->setConfigInstance($configInstance);
+
 		$owner = $this->createMock(IUser::class);
 		$owner
 			->method('getUID')
 			->willReturn('owner');
-		$importService
-			->method('getConfig')
-			->withConsecutive(
-				['owner'],
-				['color']
-			)->willReturnonConsecutiveCalls(
-				$owner,
-				'000000'
-			);
-		$importService
-			->method('getData')
-			->willReturn(json_decode('{"name": "test"}'));
+		$importService->setConfig('owner', $owner);
+
 		$this->service->setImportService($importService);
 		$actual = $this->service->getBoard();
-		$this->assertInstanceOf(Board::class, $actual);
-		$this->assertEquals('test', $actual->getTitle());
+		$this->assertEquals('Test Board Name', $actual->getTitle());
 		$this->assertEquals('owner', $actual->getOwner());
-		$this->assertEquals('000000', $actual->getColor());
-	}
-
-	public function testGetBoardWithInvalidName() {
-		$this->expectErrorMessage('Invalid name of board');
-		$importService = $this->createMock(BoardImportService::class);
-		$importService
-			->method('getData')
-			->willReturn(new \stdClass);
-		$this->service->setImportService($importService);
-		$this->service->getBoard();
+		$this->assertEquals('0800fd', $actual->getColor());
 	}
 }
