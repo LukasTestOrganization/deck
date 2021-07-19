@@ -79,27 +79,6 @@ class BoardImportTrelloService extends ABoardImportService {
 		}
 	}
 
-	/**
-	 * @return Acl[]
-	 */
-	public function getAclList(): array {
-		$return = [];
-		foreach ($this->members as $member) {
-			if ($member->getUID() === $this->getImportService()->getConfig('owner')->getUID()) {
-				continue;
-			}
-			$acl = new Acl();
-			$acl->setBoardId($this->getImportService()->getBoard()->getId());
-			$acl->setType(Acl::PERMISSION_TYPE_USER);
-			$acl->setParticipant($member->getUID());
-			$acl->setPermissionEdit(false);
-			$acl->setPermissionShare(false);
-			$acl->setPermissionManage(false);
-			$return[] = $acl;
-		}
-		return $return;
-	}
-
 	private function checklistItem(\stdClass $item): string {
 		if (($item->state == 'incomplete')) {
 			$string_start = '- [ ]';
@@ -119,49 +98,6 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $checklist_string;
 	}
 
-	/**
-	 * @return Card[]
-	 */
-	public function getCards(): array {
-		$checklists = [];
-		foreach ($this->getImportService()->getData()->checklists as $checklist) {
-			$checklists[$checklist->idCard][$checklist->id] = $this->formulateChecklistText($checklist);
-		}
-		$this->getImportService()->getData()->checklists = $checklists;
-
-		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
-			$card = new Card();
-			$lastModified = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->dateLastActivity);
-			$card->setLastModified($lastModified->format('Y-m-d H:i:s'));
-			if ($trelloCard->closed) {
-				$card->setDeletedAt($lastModified->format('U'));
-			}
-			if ((count($trelloCard->idChecklists) !== 0)) {
-				foreach ($this->getImportService()->getData()->checklists[$trelloCard->id] as $checklist) {
-					$trelloCard->desc .= "\n" . $checklist;
-				}
-			}
-			$this->appendAttachmentsToDescription($trelloCard);
-
-			$card->setTitle($trelloCard->name);
-			$card->setStackId($this->stacks[$trelloCard->idList]->getId());
-			$cardsOnStack = $this->stacks[$trelloCard->idList]->getCards();
-			$cardsOnStack[] = $card;
-			$this->stacks[$trelloCard->idList]->setCards($cardsOnStack);
-			$card->setType('plain');
-			$card->setOrder($trelloCard->idShort);
-			$card->setOwner($this->getImportService()->getConfig('owner')->getUID());
-			$card->setDescription($trelloCard->desc);
-			if ($trelloCard->due) {
-				$duedate = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->due)
-					->format('Y-m-d H:i:s');
-				$card->setDuedate($duedate);
-			}
-			$this->cards[$trelloCard->id] = $card;
-		}
-		return $this->cards;
-	}
-
 	private function appendAttachmentsToDescription(\stdClass $trelloCard): void {
 		if (empty($trelloCard->attachments)) {
 			return;
@@ -175,7 +111,8 @@ class BoardImportTrelloService extends ABoardImportService {
 		}
 	}
 
-	public function importParticipants(): void {
+	public function getCardAssignments(): array {
+		$assignments = [];
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->idMembers as $idMember) {
 				if (empty($this->members[$idMember])) {
@@ -185,38 +122,43 @@ class BoardImportTrelloService extends ABoardImportService {
 				$assignment->setCardId($this->cards[$trelloCard->id]->getId());
 				$assignment->setParticipant($this->members[$idMember]->getUID());
 				$assignment->setType(Assignment::TYPE_USER);
-				$this->getImportService()->insertAssignment($assignment);
+				$assignments[$trelloCard->id][] = $assignment;
 			}
 		}
+		return $assignments;
 	}
 
-	public function importComments(): void {
+	public function getComments(): array {
+		$comments = [];
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
-			$comments = array_filter(
+			$values = array_filter(
 				$this->getImportService()->getData()->actions,
 				function (\stdClass $a) use ($trelloCard) {
 					return $a->type === 'commentCard' && $a->data->card->id === $trelloCard->id;
 				}
 			);
-			foreach ($comments as $trelloComment) {
+			$keys = array_map(function (\stdClass $c): string {
+				return $c->id;
+			}, $values);
+			$trelloComments = array_combine($keys, $values);
+			foreach ($trelloComments as $commentId => $trelloComment) {
+				$comment = new Comment();
 				if (!empty($this->getImportService()->getConfig('uidRelation')->{$trelloComment->memberCreator->username})) {
 					$actor = $this->getImportService()->getConfig('uidRelation')->{$trelloComment->memberCreator->username}->getUID();
 				} else {
 					$actor = $this->getImportService()->getConfig('owner')->getUID();
 				}
-				$comment = new Comment();
 				$comment
 					->setActor('users', $actor)
 					->setMessage($this->replaceUsernames($trelloComment->data->text), 0)
 					->setCreationDateTime(
 						\DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloComment->date)
 					);
-				$this->getImportService()->insertComment(
-					(string) $this->cards[$trelloCard->id]->getId(),
-					$comment
-				);
+				$cardId = $this->cards[$trelloCard->id]->getId();
+				$comments[$cardId][$commentId] = $comment;
 			}
 		}
+		return $comments;
 	}
 
 	private function replaceUsernames(string $text): string {
@@ -235,24 +177,6 @@ class BoardImportTrelloService extends ABoardImportService {
 				);
 			}
 		}
-	}
-
-	/**
-	 * @return Stack[]
-	 */
-	public function getStacks(): array {
-		$return = [];
-		foreach ($this->getImportService()->getData()->lists as $order => $list) {
-			$stack = new Stack();
-			if ($list->closed) {
-				$stack->setDeletedAt(time());
-			}
-			$stack->setTitle($list->name);
-			$stack->setBoardId($this->getImportService()->getBoard()->getId());
-			$stack->setOrder($order + 1);
-			$return[$list->id] = $stack;
-		}
-		return $return;
 	}
 
 	private function translateColor(string $color): string {
@@ -309,5 +233,88 @@ class BoardImportTrelloService extends ABoardImportService {
 			$this->labels[$trelloLabel->id] = $label;
 		}
 		return $this->labels;
+	}
+
+	/**
+	 * @return Stack[]
+	 */
+	public function getStacks(): array {
+		$return = [];
+		foreach ($this->getImportService()->getData()->lists as $order => $list) {
+			$stack = new Stack();
+			if ($list->closed) {
+				$stack->setDeletedAt(time());
+			}
+			$stack->setTitle($list->name);
+			$stack->setBoardId($this->getImportService()->getBoard()->getId());
+			$stack->setOrder($order + 1);
+			$return[$list->id] = $stack;
+		}
+		return $return;
+	}
+
+	/**
+	 * @return Card[]
+	 */
+	public function getCards(): array {
+		$checklists = [];
+		foreach ($this->getImportService()->getData()->checklists as $checklist) {
+			$checklists[$checklist->idCard][$checklist->id] = $this->formulateChecklistText($checklist);
+		}
+		$this->getImportService()->getData()->checklists = $checklists;
+
+		$cards = [];
+		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
+			$card = new Card();
+			$lastModified = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->dateLastActivity);
+			$card->setLastModified($lastModified->format('Y-m-d H:i:s'));
+			if ($trelloCard->closed) {
+				$card->setDeletedAt($lastModified->format('U'));
+			}
+			if ((count($trelloCard->idChecklists) !== 0)) {
+				foreach ($this->getImportService()->getData()->checklists[$trelloCard->id] as $checklist) {
+					$trelloCard->desc .= "\n" . $checklist;
+				}
+			}
+			$this->appendAttachmentsToDescription($trelloCard);
+
+			$card->setTitle($trelloCard->name);
+			$card->setStackId($this->stacks[$trelloCard->idList]->getId());
+			$cardsOnStack = $this->stacks[$trelloCard->idList]->getCards();
+			$cardsOnStack[] = $card;
+			$this->stacks[$trelloCard->idList]->setCards($cardsOnStack);
+			$card->setType('plain');
+			$card->setOrder($trelloCard->idShort);
+			$card->setOwner($this->getImportService()->getConfig('owner')->getUID());
+			$card->setDescription($trelloCard->desc);
+			if ($trelloCard->due) {
+				$duedate = \DateTime::createFromFormat('Y-m-d\TH:i:s.v\Z', $trelloCard->due)
+					->format('Y-m-d H:i:s');
+				$card->setDuedate($duedate);
+			}
+			$cards[$trelloCard->id] = $card;
+		}
+		return $cards;
+	}
+
+	/**
+	 * @return Acl[]
+	 */
+	public function getAclList(): array {
+		$return = [];
+		foreach ($this->members as $member) {
+			if ($member->getUID() === $this->getImportService()->getConfig('owner')->getUID()) {
+				continue;
+			}
+			$acl = new Acl();
+			$acl->setBoardId($this->getImportService()->getBoard()->getId());
+			$acl->setType(Acl::PERMISSION_TYPE_USER);
+			$acl->setParticipant($member->getUID());
+			$acl->setPermissionEdit(false);
+			$acl->setPermissionShare(false);
+			$acl->setPermissionManage(false);
+			$return[] = $acl;
+		}
+		return $return;
 	}
 }

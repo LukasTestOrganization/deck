@@ -22,8 +22,10 @@
  */
 namespace OCA\Deck\Service;
 
+use OC\Comments\Comment;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AclMapper;
+use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\BoardMapper;
 use OCA\Deck\Db\Card;
@@ -36,27 +38,30 @@ use OCP\Comments\ICommentsManager;
 use OCP\IDBConnection;
 use OCP\IUser;
 use OCP\IUserManager;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class BoardImportServiceTest extends \Test\TestCase {
-	/** @var IDBConnection */
+	/** @var IDBConnection|MockObject */
 	protected $dbConn;
-	/** @var IUserManager */
+	/** @var IUserManager|MockObject */
 	private $userManager;
-	/** @var BoardMapper */
+	/** @var BoardMapper|MockObject */
 	private $boardMapper;
-	/** @var AclMapper */
+	/** @var AclMapper|MockObject */
 	private $aclMapper;
-	/** @var LabelMapper */
+	/** @var LabelMapper|MockObject */
 	private $labelMapper;
-	/** @var StackMapper */
+	/** @var StackMapper|MockObject */
 	private $stackMapper;
-	/** @var CardMapper */
+	/** @var CardMapper|MockObject */
 	private $cardMapper;
-	/** @var AssignmentMapper */
+	/** @var AssignmentMapper|MockObject */
 	private $assignmentMapper;
-	/** @var ICommentsManager */
+	/** @var ICommentsManager|MockObject */
 	private $commentsManager;
-	/** @var BoardImportService */
+	/** @var BoardImportTrelloService|MockObject */
+	private $importTrelloService;
+	/** @var BoardImportService|MockObject */
 	private $boardImportService;
 	public function setUp(): void {
 		$this->dbConn = $this->createMock(IDBConnection::class);
@@ -88,8 +93,8 @@ class BoardImportServiceTest extends \Test\TestCase {
 		$configInstance = json_decode(file_get_contents(__DIR__ . '/../../data/config-trello.json'));
 		$this->boardImportService->setConfigInstance($configInstance);
 
-		$importTrelloService = $this->createMock(BoardImportTrelloService::class);
-		$this->boardImportService->setImportSystem($importTrelloService);
+		$this->importTrelloService = $this->createMock(BoardImportTrelloService::class);
+		$this->boardImportService->setImportSystem($this->importTrelloService);
 
 		$owner = $this->createMock(IUser::class);
 		$owner
@@ -117,30 +122,51 @@ class BoardImportServiceTest extends \Test\TestCase {
 			->expects($this->once())
 			->method('insert');
 
-		$this->boardImportService->getImportSystem()
+		$this->importTrelloService
 			->method('getAclList')
 			->willReturn([new Acl()]);
 		$this->aclMapper
 			->expects($this->once())
 			->method('insert');
 
-		$this->boardImportService->getImportSystem()
+		$this->importTrelloService
 			->method('getLabels')
 			->willReturn([new Label()]);
 		$this->labelMapper
 			->expects($this->once())
 			->method('insert');
 
-		$this->boardImportService->getImportSystem()
+		$this->importTrelloService
 			->method('getStacks')
 			->willReturn([new Stack()]);
 		$this->stackMapper
 			->expects($this->once())
 			->method('insert');
 
-		$this->boardImportService->getImportSystem()
+		$this->importTrelloService
 			->method('getCards')
 			->willReturn([new Card()]);
+		$this->cardMapper
+			->expects($this->any())
+			->method('insert');
+
+		$this->importTrelloService
+			->method('getComments')
+			->willReturn([
+				'fakecardid' => [new Comment()]
+			]);
+		$this->commentsManager
+			->expects($this->once())
+			->method('save');
+
+		$this->importTrelloService
+			->method('getCardAssignments')
+			->willReturn([
+				'fakecardid' => [new Assignment()]
+			]);
+		$this->assignmentMapper
+			->expects($this->once())
+			->method('insert');
 
 		$actual = $this->boardImportService->import();
 

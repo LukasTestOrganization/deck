@@ -23,12 +23,15 @@
 
 namespace OCA\Deck\Service;
 
+use OC\Comments\Comment;
 use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
 use OCP\AppFramework\Db\Entity;
+use OCP\Comments\IComment;
 
 abstract class ABoardImportService {
 	/** @var BoardImportService */
@@ -41,6 +44,10 @@ abstract class ABoardImportService {
 	protected $cards = [];
 	/** @var Acl[] */
 	protected $acls = [];
+	/** @var IComment[][] */
+	protected $comments = [];
+	/** @var Assignment[] */
+	protected $assignments = [];
 
 	abstract public function getBoard(): ?Board;
 
@@ -59,9 +66,12 @@ abstract class ABoardImportService {
 	 */
 	abstract public function getCards(): array;
 
-	abstract public function importParticipants(): void;
+	abstract public function getCardAssignments(): array;
 
-	abstract public function importComments(): void;
+	/**
+	 * @return IComment[][]|array
+	 */
+	abstract public function getComments(): array;
 
 	/** @return Label[] */
 	abstract public function getLabels(): array;
@@ -89,6 +99,14 @@ abstract class ABoardImportService {
 
 	public function updateAcl(string $code, Acl $acl): void {
 		$this->acls[$code] = $acl;
+	}
+
+	public function updateComment(string $cardId, string $commentId, IComment $comment): void {
+		$this->comments[$cardId][$commentId] = $comment;
+	}
+
+	public function updateCardAssignment(string $cardId, string $assignmentId, Entity $assignment): void {
+		$this->assignments[$cardId][$assignmentId] = $assignment;
 	}
 
 	public function setImportService(BoardImportService $service): void {
