@@ -23,7 +23,6 @@
 
 namespace OCA\Deck\Service;
 
-use OC\Comments\Comment;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
@@ -48,6 +47,8 @@ abstract class ABoardImportService {
 	protected $comments = [];
 	/** @var Assignment[] */
 	protected $assignments = [];
+	/** @var string[][] */
+	protected $labelCardAssignments = [];
 
 	abstract public function getBoard(): ?Board;
 
@@ -68,6 +69,8 @@ abstract class ABoardImportService {
 
 	abstract public function getCardAssignments(): array;
 
+	abstract public function getCardLabelAssignment(): array;
+
 	/**
 	 * @return IComment[][]|array
 	 */
@@ -75,8 +78,6 @@ abstract class ABoardImportService {
 
 	/** @return Label[] */
 	abstract public function getLabels(): array;
-
-	abstract public function assignCardsToLabels(): void;
 
 	/**
 	 * Configure import service
@@ -107,6 +108,10 @@ abstract class ABoardImportService {
 
 	public function updateCardAssignment(string $cardId, string $assignmentId, Entity $assignment): void {
 		$this->assignments[$cardId][$assignmentId] = $assignment;
+	}
+
+	public function updateCardLabelsAssignment(string $cardId, string $assignmentId, string $assignment): void {
+		$this->labelCardAssignments[$cardId][$assignmentId] = $assignment;
 	}
 
 	public function setImportService(BoardImportService $service): void {

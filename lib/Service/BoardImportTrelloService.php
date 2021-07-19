@@ -168,15 +168,16 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $text;
 	}
 
-	public function assignCardsToLabels(): void {
+	public function getCardLabelAssignment(): array {
+		$cardsLabels = [];
 		foreach ($this->getImportService()->getData()->cards as $trelloCard) {
 			foreach ($trelloCard->labels as $label) {
-				$this->getImportService()->assignCardToLabel(
-					$this->cards[$trelloCard->id]->getId(),
-					$this->labels[$label->id]->getId()
-				);
+				$cardId = $this->cards[$trelloCard->id]->getId();
+				$labelId = $this->labels[$label->id]->getId();
+				$cardsLabels[$cardId][] = $labelId;
 			}
 		}
+		return $cardsLabels;
 	}
 
 	private function translateColor(string $color): string {

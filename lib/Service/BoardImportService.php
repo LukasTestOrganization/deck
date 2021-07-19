@@ -25,7 +25,6 @@ namespace OCA\Deck\Service;
 
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
-use OC\Comments\Comment;
 use OCA\Deck\AppInfo\Application;
 use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\AclMapper;
@@ -271,7 +270,16 @@ class BoardImportService {
 	}
 
 	public function assignCardsToLabels(): void {
-		$this->getImportSystem()->assignCardsToLabels();
+		$data = $this->getImportSystem()->getCardLabelAssignment();
+		foreach ($data as $cardId => $assignemnt) {
+			foreach ($assignemnt as $assignmentId => $labelId) {
+				$this->assignCardToLabel(
+					$cardId,
+					$labelId
+				);
+				$this->getImportSystem()->updateCardLabelsAssignment($cardId, $assignmentId, $labelId);
+			}
+		}
 	}
 
 	public function importComments(): void {
