@@ -65,7 +65,12 @@
 					@click="actionArchive">
 					{{ t('deck', 'Archive board') }}
 				</ActionButton>
-
+				<ActionButton v-if="canManage && !board.archived"
+					icon="icon-download"
+					:close-after-click="true"
+					@click="actionExport">
+					{{ t('deck', 'Export board') }}
+				</ActionButton>
 				<ActionButton v-if="!board.archived && board.acl.length === 0" :icon="board.settings['notify-due'] === 'off' ? 'icon-sound' : 'icon-sound-off'" @click="board.settings['notify-due'] === 'off' ? updateSetting('notify-due', 'all') : updateSetting('notify-due', 'off')">
 					{{ board.settings['notify-due'] === 'off' ? t('deck', 'Turn on due date reminders') : t('deck', 'Turn off due date reminders') }}
 				</ActionButton>
@@ -304,6 +309,9 @@ export default {
 			await this.$store.dispatch('setConfig', setting)
 			this.isDueSubmenuActive = false
 			this.updateDueSetting = null
+		},
+		actionExport() {
+			this.boardApi.exportBoard(this.board)
 		},
 	},
 }
