@@ -33,17 +33,9 @@ use OCP\AppFramework\Db\Entity;
 abstract class ABoardImportService {
 	/** @var BoardImportService */
 	private $boardImportService;
-	/**
-	 * Array of stacks
-	 *
-	 * @var Stack[]
-	 */
+	/** @var Stack[] */
 	protected $stacks = [];
-	/**
-	 * Array of Labels
-	 *
-	 * @var Label[]|Entity[]
-	 */
+	/** @var Label[] */
 	protected $labels = [];
 	/** @var Card[] */
 	protected $cards = [];

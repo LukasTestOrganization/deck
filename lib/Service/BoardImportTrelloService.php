@@ -293,6 +293,9 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $board;
 	}
 
+	/**
+	 * @return Label[]
+	 */
 	public function getLabels(): array {
 		foreach ($this->getImportService()->getData()->labels as $trelloLabel) {
 			$label = new Label();
