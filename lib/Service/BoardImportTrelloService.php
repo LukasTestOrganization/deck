@@ -31,7 +31,6 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
-use OCP\AppFramework\Db\Entity;
 use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -41,20 +40,6 @@ class BoardImportTrelloService extends ABoardImportService {
 	private $userManager;
 	/** @var IL10N */
 	private $l10n;
-	/**
-	 * Array of stacks
-	 *
-	 * @var Stack[]
-	 */
-	private $stacks = [];
-	/**
-	 * Array of Labels
-	 *
-	 * @var Label[]|Entity[]
-	 */
-	private $labels = [];
-	/** @var Card[] */
-	private $cards = [];
 	/** @var IUser[] */
 	private $members = [];
 
@@ -177,10 +162,6 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $this->cards;
 	}
 
-	public function updateCard(string $id, Card $card): void {
-		$this->cards[$id] = $card;
-	}
-
 	private function appendAttachmentsToDescription(\stdClass $trelloCard): void {
 		if (empty($trelloCard->attachments)) {
 			return;
@@ -274,10 +255,6 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $return;
 	}
 
-	public function updateStack(string $id, Stack $stack): void {
-		$this->stacks[$id] = $stack;
-	}
-
 	private function translateColor(string $color): string {
 		switch ($color) {
 			case 'red':
@@ -316,19 +293,17 @@ class BoardImportTrelloService extends ABoardImportService {
 		return $board;
 	}
 
-	public function importLabels(): array {
-		foreach ($this->getImportService()->getData()->labels as $label) {
-			if (empty($label->name)) {
-				$labelTitle = 'Unnamed ' . $label->color . ' label';
+	public function getLabels(): array {
+		foreach ($this->getImportService()->getData()->labels as $trelloLabel) {
+			$label = new Label();
+			if (empty($trelloLabel->name)) {
+				$label->setTitle('Unnamed ' . $trelloLabel->color . ' label');
 			} else {
-				$labelTitle = $label->name;
+				$label->setTitle($trelloLabel->name);
 			}
-			$newLabel = $this->getImportService()->createLabel(
-				$labelTitle,
-				$this->translateColor($label->color),
-				$this->getImportService()->getBoard()->getId()
-			);
-			$this->labels[$label->id] = $newLabel;
+			$label->setColor($this->translateColor($trelloLabel->color));
+			$label->setBoardId($this->getImportService()->getBoard()->getId());
+			$this->labels[$trelloLabel->id] = $label;
 		}
 		return $this->labels;
 	}

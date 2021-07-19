@@ -28,10 +28,27 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\Label;
 use OCA\Deck\Db\Stack;
+use OCP\AppFramework\Db\Entity;
 
 abstract class ABoardImportService {
 	/** @var BoardImportService */
 	private $boardImportService;
+	/**
+	 * Array of stacks
+	 *
+	 * @var Stack[]
+	 */
+	protected $stacks = [];
+	/**
+	 * Array of Labels
+	 *
+	 * @var Label[]|Entity[]
+	 */
+	protected $labels = [];
+	/** @var Card[] */
+	protected $cards = [];
+	/** @var Acl[] */
+	protected $acls = [];
 
 	abstract public function getBoard(): ?Board;
 
@@ -50,16 +67,12 @@ abstract class ABoardImportService {
 	 */
 	abstract public function getCards(): array;
 
-	abstract public function updateStack(string $id, Stack $stack): void;
-
-	abstract public function updateCard(string $id, Card $card): void;
-
 	abstract public function importParticipants(): void;
 
 	abstract public function importComments(): void;
 
 	/** @return Label[] */
-	abstract public function importLabels(): array;
+	abstract public function getLabels(): array;
 
 	abstract public function assignCardsToLabels(): void;
 
@@ -69,6 +82,22 @@ abstract class ABoardImportService {
 	 * @return void
 	 */
 	abstract public function bootstrap(): void;
+
+	public function updateStack(string $id, Stack $stack): void {
+		$this->stacks[$id] = $stack;
+	}
+
+	public function updateCard(string $id, Card $card): void {
+		$this->cards[$id] = $card;
+	}
+
+	public function updateLabel(string $code, Label $label): void {
+		$this->labels[$code] = $label;
+	}
+
+	public function updateAcl(string $code, Acl $acl): void {
+		$this->acls[$code] = $acl;
+	}
 
 	public function setImportService(BoardImportService $service): void {
 		$this->boardImportService = $service;

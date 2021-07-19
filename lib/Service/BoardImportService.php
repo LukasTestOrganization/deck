@@ -171,15 +171,14 @@ class BoardImportService {
 	}
 
 	public function getImportSystem(): ABoardImportService {
-		$systemClass = 'OCA\\Deck\\Service\\BoardImport' . ucfirst($this->getSystem()) . 'Service';
 		if (!$this->getSystem()) {
 			throw new NotFoundException('System to import not found');
 		}
 		if (!is_object($this->systemInstance)) {
+			$systemClass = 'OCA\\Deck\\Service\\BoardImport' . ucfirst($this->getSystem()) . 'Service';
 			$this->systemInstance = \OC::$server->get($systemClass);
 			$this->systemInstance->setImportService($this);
 		}
-
 		return $this->systemInstance;
 	}
 
@@ -200,26 +199,29 @@ class BoardImportService {
 		}
 	}
 
-	public function getBoard($reset = false): Board {
+	public function getBoard(bool $reset = false): Board {
 		if ($reset) {
 			$this->board = new Board();
 		}
 		return $this->board;
 	}
 
-	public function importAcl(): self {
+	public function importAcl(): void {
 		$aclList = $this->getImportSystem()->getAclList();
-		foreach ($aclList as $acl) {
+		foreach ($aclList as $code => $acl) {
 			$this->aclMapper->insert($acl);
+			$this->getImportSystem()->updateAcl($code, $acl);
 		}
 		$this->getBoard()->setAcl($aclList);
-		return $this;
 	}
 
-	public function importLabels(): array {
-		$labels = $this->getImportSystem()->importLabels();
+	public function importLabels(): void {
+		$labels = $this->getImportSystem()->getLabels();
+		foreach ($labels as $code => $label) {
+			$this->labelMapper->insert($label);
+			$this->getImportSystem()->updateLabel($code, $label);
+		}
 		$this->getBoard()->setLabels($labels);
-		return $labels;
 	}
 
 	public function createLabel(string $title, string $color, int $boardId): Entity {
@@ -230,17 +232,13 @@ class BoardImportService {
 		return $this->labelMapper->insert($label);
 	}
 
-	/**
-	 * @return Stack[]
-	 */
-	public function importStacks(): array {
+	public function importStacks(): void {
 		$stacks = $this->getImportSystem()->getStacks();
 		foreach ($stacks as $code => $stack) {
 			$this->stackMapper->insert($stack);
 			$this->getImportSystem()->updateStack($code, $stack);
 		}
 		$this->getBoard()->setStacks(array_values($stacks));
-		return $stacks;
 	}
 
 	public function importCards(): self {
