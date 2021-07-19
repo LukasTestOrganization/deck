@@ -87,7 +87,6 @@ class BoardImportService {
 	private $data;
 	/**
 	 * @var Board
-	 * @psalm-suppress PropertyNotSetInConstructor
 	 */
 	private $board;
 
@@ -111,6 +110,7 @@ class BoardImportService {
 		$this->cardMapper = $cardMapper;
 		$this->assignmentMapper = $assignmentMapper;
 		$this->commentsManager = $commentsManager;
+		$this->board = new Board();
 	}
 
 	public function import(): void {
@@ -200,7 +200,10 @@ class BoardImportService {
 		}
 	}
 
-	public function getBoard(): Board {
+	public function getBoard($reset = false): Board {
+		if ($reset) {
+			$this->board = new Board();
+		}
 		return $this->board;
 	}
 
